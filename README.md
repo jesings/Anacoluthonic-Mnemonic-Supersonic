@@ -1,0 +1,2 @@
+Epic Sequel to https://github.com/anotherLostKitten/minecraft-hunger-games-sans-3d
+this time featuring gamer gamer Mo(can't actually eat ham because of his religion)med Uddin in addition to returning veterans Theodore "YBHM" Peters, Jonathicc Singer
