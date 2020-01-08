@@ -1,0 +1,8 @@
+*.o
+*.out
+*.exe
+*~*
+\#*
+*\#
+client
+server
