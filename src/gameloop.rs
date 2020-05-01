@@ -1,9 +1,9 @@
-use sdl2::pixels::Color;
 use std::time::{Duration, Instant};
 
-mod event;
-mod render;
 #[path = "grid.rs"] mod grid;
+mod gamestate;
+mod render;
+mod event;
 
 pub fn gameloop() {
     let sdl_context = sdl2::init().unwrap();
@@ -16,13 +16,20 @@ pub fn gameloop() {
 
     let mut canvas = window.into_canvas().build().unwrap();
 
-    canvas.set_draw_color(Color::RGB(0, 0, 0));
-    canvas.clear();
-    canvas.present();
+    let mut grid: grid::Grid;
+    match grid::Grid::random_grid(400, 400){
+        Ok(g) => grid = g,
+        Err(_e) => return,
+    }
+
+    let mut gs = gamestate::GameState{
+        canvas: &mut canvas,
+        grid: &mut grid,
+    };
+
     let mut event_pump = sdl_context.event_pump().unwrap();
     'running: loop {
-       let begin = Instant::now();
-        canvas.clear();
+        let begin = Instant::now();
         match event::handle_events(&mut event_pump) {
             false => break 'running,
             true => {},
@@ -33,9 +40,11 @@ pub fn gameloop() {
         // loop
         // goes
         // here...
-        render::render(&mut canvas);
+        match render::render(&mut gs) {
+            Ok(_r) => {},
+            Err(e) => eprintln!("{}", e),
+        }
 
-        canvas.present();
         let framerate = 4;
 
         let delta = begin.elapsed();
