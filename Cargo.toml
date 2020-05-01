@@ -1,0 +1,12 @@
+[package]
+name = "anacoluthonic_mnemonic_supersonic"
+version = "0.1.0"
+authors = ["jesings <34111484+jesings@users.noreply.github.com>", "anotherLostKitten <eggismagicchickensquared@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies.sdl2]
+version = "0.34"
+default-features = false
+features = ["ttf","image","gfx","mixer"]

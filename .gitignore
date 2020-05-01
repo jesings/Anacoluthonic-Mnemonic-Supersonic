@@ -6,3 +6,7 @@
 *\#
 client
 server
+
+#Added by cargo
+
+/target

@@ -95,7 +95,7 @@ impl Grid{
     }
 }
 
-fn main(){
+/* fn main(){
     let grid: Grid;
     if let Ok(g) = Grid::new_from_file("test.map"){
         grid = g;
@@ -104,4 +104,4 @@ fn main(){
         return;
     }
     grid.print_grid();
-}
+} */
