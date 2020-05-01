@@ -28,6 +28,9 @@ pub fn gameloop() {
     };
 
     let mut event_pump = sdl_context.event_pump().unwrap();
+
+    let framerate = 4;
+
     'running: loop {
         let begin = Instant::now();
         match event::handle_events(&mut event_pump) {
@@ -45,7 +48,6 @@ pub fn gameloop() {
             Err(e) => eprintln!("{}", e),
         }
 
-        let framerate = 4;
 
         let delta = begin.elapsed();
 

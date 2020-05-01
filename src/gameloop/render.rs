@@ -4,7 +4,7 @@ use super::grid::*;
 pub fn render(gs: &mut GameState) -> Result<bool, String> {
     gs.set_draw_color(0, 0, 0);
     gs.clear();
-    for i in (0..gs.grid.rows).rev() {
+    for i in 0..gs.grid.rows {
         for j in 0..gs.grid.cols {
             let tile: &Tile;
             let color: u8;
