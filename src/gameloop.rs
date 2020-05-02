@@ -1,6 +1,7 @@
 use std::time::{Duration, Instant};
 
 #[path = "grid.rs"] mod grid;
+#[path = "entities.rs"] mod entities;
 mod gamestate;
 mod render;
 mod event;
