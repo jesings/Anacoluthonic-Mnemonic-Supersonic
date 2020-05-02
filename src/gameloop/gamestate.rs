@@ -1,14 +1,16 @@
 use sdl2::render::{WindowCanvas};
 use super::grid::*;
+use super::entities::*;
 use sdl2::pixels::Color;
 use sdl2::rect::*;
 
-pub struct GameState<'a> {
-    pub canvas: &'a mut WindowCanvas,
-    pub grid: &'a mut Grid,
+pub struct GameState {
+    pub canvas: WindowCanvas,
+    pub grid: Grid,
+    pub player: Player,
 }
 
-impl GameState<'_> {
+impl GameState {
     pub fn clear(&mut self){
         self.canvas.clear()
     }

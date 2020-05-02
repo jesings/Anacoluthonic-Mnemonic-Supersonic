@@ -24,8 +24,9 @@ pub fn gameloop() {
     }
 
     let mut gs = gamestate::GameState{
-        canvas: &mut canvas,
-        grid: &mut grid,
+        canvas: canvas,
+        grid: grid,
+        player: entities::Player::new(),
     };
 
     let mut event_pump = sdl_context.event_pump().unwrap();
