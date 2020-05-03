@@ -18,6 +18,7 @@ macro_rules! readerror {
 
 pub struct Tile {
     pub texture: u8, //Not sure texture should be a u8, we can make it an SDL object later
+    pub passable: bool,
 }
 
 pub struct Grid {
@@ -34,7 +35,7 @@ impl Grid{
         let mut read = 0;
 
         for byte in mapbytes {
-            vec.push(Tile{texture: byte});
+            vec.push(Tile{texture: byte, passable: true});
             read += 1;
         }
 
@@ -79,7 +80,7 @@ impl Grid{
     }
 
     pub fn grid_coord(&self, r: usize, c: usize) -> Option<&Tile>{
-        if r > self.rows || c > self.cols {
+        if r >= self.rows || c >= self.cols {
             None
         } else {
             Some(&self.tiles[r * self.cols + c])

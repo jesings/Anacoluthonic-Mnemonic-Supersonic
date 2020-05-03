@@ -6,6 +6,8 @@ mod gamestate;
 mod render;
 mod event;
 
+static FRAMERATE: u32 = 240;
+
 pub fn gameloop() {
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
@@ -18,34 +20,33 @@ pub fn gameloop() {
     let mut canvas = window.into_canvas().build().unwrap();
 
     let mut grid: grid::Grid;
-    match grid::Grid::random_grid(400, 400){
+    match grid::Grid::random_grid(400, 400) {
         Ok(g) => grid = g,
         Err(_e) => return,
     }
+
 
     let mut gs = gamestate::GameState{
         canvas: canvas,
         grid: grid,
         player: entities::Player::new(),
+        pump: sdl_context.event_pump().unwrap(),
     };
-
-    let mut event_pump = sdl_context.event_pump().unwrap();
-
-    let framerate = 4;
 
     'running: loop {
         let begin = Instant::now();
-        match event::handle_events(&mut event_pump) {
+
+        match gs.handle_events() {
             false => break 'running,
             true => {},
         }
-        // The rest
-        // of the
-        // game
-        // loop
-        // goes
-        // here...
-        match render::render(&mut gs) {
+
+        match gs.update() {
+            true => {},
+            false => {},
+        }
+
+        match gs.render() {
             Ok(_r) => {},
             Err(e) => eprintln!("{}", e),
         }
@@ -53,7 +54,7 @@ pub fn gameloop() {
 
         let delta = begin.elapsed();
 
-        let idle = 1_000_000_000u32 / framerate - delta.as_millis() as u32;
+        let idle = 1_000_000_000u32 / FRAMERATE - delta.as_millis() as u32;
 
         std::thread::sleep(Duration::new(0, idle));
     }
