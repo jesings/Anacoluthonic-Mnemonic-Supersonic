@@ -12,3 +12,6 @@ rand = { version = "0.7"}
 version = "0.34"
 default-features = false
 features = ["ttf","image","gfx","mixer"]
+
+[dependencies.pnet]
+version = "0.26.0"
