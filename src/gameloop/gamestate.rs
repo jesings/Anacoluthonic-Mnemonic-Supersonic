@@ -31,6 +31,8 @@ impl GameState {
         let down = kbs.is_scancode_pressed(Scancode::S) || kbs.is_scancode_pressed(Scancode::Down);
         let right = kbs.is_scancode_pressed(Scancode::D) || kbs.is_scancode_pressed(Scancode::Right);
         let up = kbs.is_scancode_pressed(Scancode::W) || kbs.is_scancode_pressed(Scancode::Up);
+        let cw = kbs.is_scancode_pressed(Scancode::E);
+        let ccw = kbs.is_scancode_pressed(Scancode::Q);
 
         let mut ddxdt: f64 = 0.0;
         let mut ddydt: f64 = 0.0;
@@ -38,12 +40,16 @@ impl GameState {
         if right { ddxdt += ACCEL; }
         if up { ddydt -= ACCEL; }
         if down { ddydt += ACCEL; }
+        let mut rv: f64 = 0.0;
+        if cw { rv += 0.9; }
+        if ccw { rv -= 0.9; }
 
         let nrmlzr = ddxdt.hypot(ddydt);
         ddxdt *= nrmlzr;
         ddydt *= nrmlzr;
 
         self.player.change_vel(ddxdt, ddydt);
+        self.player.rotate(rv);
 
         //loop over all entities, for now we just do player
         self.player.apply_vel(&self.grid);

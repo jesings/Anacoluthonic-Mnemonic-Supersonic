@@ -3,6 +3,7 @@ use super::gamestate::*;
 use super::grid::Tile;
 use super::entities::*;
 use sdl2::rect::*;
+use sdl2::gfx::rotozoom::RotozoomSurface;
 
 use sdl2::pixels::PixelFormatEnum;
 use sdl2::surface::Surface;
@@ -62,7 +63,7 @@ impl GameState {
         let topx = (dims.0 / 2) as i32 - (pdim.x * DTILEDIM) as i32;
         let topy = (dims.1 / 2) as i32 - (pdim.y * DTILEDIM) as i32;
         let texture_creator = self.canvas.texture_creator();
-        let surf = Surface::new(xlen, ylen, PixelFormatEnum::RGB24).unwrap().rotozoom(self.player.rot(), 1.0, true)?;
+        let mut surf = Surface::new(xlen, ylen, PixelFormatEnum::RGB24).unwrap();
         let text = texture_creator.create_texture_from_surface(&mut surf).unwrap();
         self.canvas.copy_ex(&text, None, Rect::new(topx, topy, xlen, ylen), self.player.rot(), ppt, false, false);
         

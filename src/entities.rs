@@ -8,20 +8,20 @@ pub trait Entity {
     fn mut_health(&mut self) -> &mut f32;
     fn maxhealth(&self) -> f32;
     fn mut_pos(&mut self) -> &mut Position;
-    fn pos(&mut self) -> Position;
+    fn pos(&self) -> Position;
     fn mut_vel(&mut self) -> &mut Position;
     fn vel(&self) -> Position;
     fn maxvel(&self) -> f64;
     fn rot(&self) -> f64;
-    fn mut_rot(&self) -> &mut f64;
+    fn mut_rot(&mut self) -> &mut f64;
     fn getrect_h(&self) -> Vec<Position> {
-        let rrot = self.rot().rem_euclid(std::f64::consts::FRAC_PI_4);
+        let rrot = self.rot().rem_euclid(90.0);
         let mydims = self.dims();
         let fullen = mydims.x.hypot(mydims.y);
-        let g: Vec<Position> = Vec::with_capacity(4);
+        let mut g: Vec<Position> = Vec::with_capacity(4);
         let mypos = self.pos();
         for f in 0..4 {
-            let erot = rrot + f as f64 * std::f64::consts::FRAC_PI_4;
+            let erot = rrot + f as f64 * 90.0;
             g.push(Position {x: erot.cos() * fullen + mypos.x, y: erot.sin() * fullen + mypos.y});
         }
         return g;
@@ -31,20 +31,20 @@ pub trait Entity {
         let urrect = other.getrect_h();
 
         //https://stackoverflow.com/questions/10962379/how-to-check-intersection-between-2-rotated-rectangles
-        for polygon in &[myrect, urrect] {
+        for polygon in &[myrect.clone(), urrect.clone()] {
             let mut prev = match polygon.last() { Some(t) => t, _ => { return false; } };
             for curpt in polygon {
                 let norm = Position {x: curpt.x - prev.y, y: prev.x - curpt.y};
 
                 let mut mymin = f64::INFINITY; let mut mymax = f64::NEG_INFINITY; 
-                for point in myrect {
+                for point in &myrect {
                     let proj = norm.x * point.x + norm.y * point.y;
                     mymin = proj.min(mymin);
                     mymax = proj.max(mymax);
                 }
 
                 let mut urmin = f64::INFINITY; let mut urmax = f64::NEG_INFINITY;
-                for point in urrect {
+                for point in &urrect {
                     let proj = norm.x * point.x + norm.y * point.y;
                     urmin = proj.min(urmin);
                     urmax = proj.max(urmax);
@@ -55,6 +55,10 @@ pub trait Entity {
             }
         }
         true
+    }
+    fn rotate(&mut self, amt: f64) {
+        let mut mr = self.mut_rot();
+        *mr += amt;
     }
     fn change_pos(&mut self, dx: f64, dy: f64, gr: &Grid) -> bool {
         let mp = self.mut_pos();
@@ -174,7 +178,7 @@ impl Entity for Player {
     fn mut_pos(&mut self) -> &mut Position {
         &mut self.pos
     }
-    fn pos(&mut self) -> Position {
+    fn pos(&self) -> Position {
         self.pos
     }
     fn mut_vel(&mut self) -> &mut Position {
@@ -189,7 +193,7 @@ impl Entity for Player {
     fn rot(&self) -> f64 {
         self.rot
     }
-    fn mut_rot(&self) -> &mut f64 {
+    fn mut_rot(&mut self) -> &mut f64 {
         &mut self.rot
     }
 }
