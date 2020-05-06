@@ -1,13 +1,11 @@
 use super::grid::*;
+use std::cmp;
 
 #[derive(Clone, Copy)]
 pub struct Position{pub x: f64, pub y: f64}
 
-#[derive(Clone, Copy)]
-pub struct HitRect{pub x1: f64, pub y1: f64, pub x2: f64, pub y2: f64}
-
 pub trait Entity {
-    fn hitrect(&self) -> HitRect;
+    fn dims(&self) -> Position;
     fn mut_health(&mut self) -> &mut f32;
     fn maxhealth(&self) -> f32;
     fn mut_pos(&mut self) -> &mut Position;
@@ -15,11 +13,49 @@ pub trait Entity {
     fn mut_vel(&mut self) -> &mut Position;
     fn vel(&self) -> Position;
     fn maxvel(&self) -> f64;
+    fn rot(&self) -> f64;
+    fn mut_rot(&self) -> &mut f64;
+    fn getrect_h(&self) -> Vec<Position> {
+        let rrot = self.rot().rem_euclid(std::f64::consts::FRAC_PI_4);
+        let mydims = self.dims();
+        let fullen = mydims.x.hypot(mydims.y);
+        let g: Vec<Position> = Vec::with_capacity(4);
+        let mypos = self.pos();
+        for f in 0..4 {
+            let erot = rrot + f as f64 * std::f64::consts::FRAC_PI_4;
+            g.push(Position {x: erot.cos() * fullen + mypos.x, y: erot.sin() * fullen + mypos.y});
+        }
+        return g;
+    }
     fn collide(&self, other: &dyn Entity) -> bool {
-        let myrect = self.hitrect();
-        let urrect = other.hitrect();
-        return myrect.x1 < urrect.x2 && myrect.x2 > urrect.x1 &&
-               myrect.y1 < urrect.y2 && myrect.y2 > urrect.y1;
+        let myrect = self.getrect_h();
+        let urrect = other.getrect_h();
+
+        //https://stackoverflow.com/questions/10962379/how-to-check-intersection-between-2-rotated-rectangles
+        for polygon in &[myrect, urrect] {
+            let mut prev = match polygon.last() { Some(t) => t, _ => { return false; } };
+            for curpt in polygon {
+                let norm = Position {x: curpt.x - prev.y, y: prev.x - curpt.y};
+
+                let mut mymin = f64::INFINITY; let mut mymax = f64::NEG_INFINITY; 
+                for point in myrect {
+                    let proj = norm.x * point.x + norm.y * point.y;
+                    mymin = proj.min(mymin);
+                    mymax = proj.max(mymax);
+                }
+
+                let mut urmin = f64::INFINITY; let mut urmax = f64::NEG_INFINITY;
+                for point in urrect {
+                    let proj = norm.x * point.x + norm.y * point.y;
+                    urmin = proj.min(urmin);
+                    urmax = proj.max(urmax);
+                }
+                if mymax < urmin || urmax < mymin {return false;}
+
+                prev = curpt;
+            }
+        }
+        true
     }
     fn change_pos(&mut self, dx: f64, dy: f64, gr: &Grid) -> bool {
         let mp = self.mut_pos();
@@ -107,7 +143,8 @@ pub struct Player {
     velocity: Position,
     maxvelocity: f64,
     pos: Position,
-    pub hitbox: HitRect,
+    dims: Position,
+    rot: f64,
     //Some kinda sprite here
 }
 
@@ -119,19 +156,15 @@ impl Player {
             velocity: Position {x: 0.0, y: 0.0},
             maxvelocity: 10.0,
             pos: Position {x: 100.0, y: 100.0},
-            hitbox: HitRect {x1: 0.5, y1: 0.5, x2: 0.5, y2: 0.5},
+            dims: Position {x: 0.5, y: 0.5},
+            rot: 0.0,
         }
     }
 }
 
 impl Entity for Player {
-    fn hitrect(&self) -> HitRect {
-        HitRect {
-            x1: self.pos.x - self.hitbox.x1,
-            y1: self.pos.y - self.hitbox.y1,
-            x2: self.pos.x + self.hitbox.x2,
-            y2: self.pos.y + self.hitbox.y2
-        }
+    fn dims(&self) -> Position {
+        self.dims
     }
     fn mut_health(&mut self) -> &mut f32 {
         &mut self.health
@@ -154,5 +187,15 @@ impl Entity for Player {
     fn maxvel(&self) -> f64 {
         self.maxvelocity
     }
+    fn rot(&self) -> f64 {
+        self.rot
+    }
+    fn mut_rot(&self) -> &mut f64 {
+        &mut self.rot
+    }
 }
 
+pub fn revert_collision<E>(e1: E, e2: E) -> bool
+    where E: Entity {
+    false
+}

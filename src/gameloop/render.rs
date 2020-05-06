@@ -4,6 +4,9 @@ use super::grid::Tile;
 use super::entities::*;
 use sdl2::rect::*;
 
+use sdl2::pixels::PixelFormatEnum;
+use sdl2::surface::Surface;
+
 static TILEDIM: u32 = 20;
 static ITILEDIM: i32 = TILEDIM as i32;
 static DTILEDIM: f64 = TILEDIM as f64;
@@ -51,12 +54,14 @@ impl GameState {
 
         //draw player
         self.set_draw_color(255, 0, 0);
-        let hr = self.player.hitbox;
-        let xlen = ((hr.x1 + hr.x2) * DTILEDIM) as u32;
-        let ylen = ((hr.y1 + hr.y2) * DTILEDIM) as u32;
-        let topx = (dims.0 / 2) as i32 - (hr.x1 * DTILEDIM) as i32;
-        let topy = (dims.1 / 2) as i32 - (hr.y1 * DTILEDIM) as i32;
-        let plyr = Rect::new(topx, topy, xlen, ylen);
+        let pdim = self.player.dims();
+        let xlen = ((pdim.x * 2.0) * DTILEDIM) as u32;
+        let ylen = ((pdim.y * 2.0) * DTILEDIM) as u32;
+        let topx = (dims.0 / 2) as i32 - (pdim.x * DTILEDIM) as i32;
+        let topy = (dims.1 / 2) as i32 - (pdim.y * DTILEDIM) as i32;
+        let texture_creator = self.canvas.texture_creator();
+        let surf = Surface::new(xlen, ylen, PixelFormatEnum::RGB24).unwrap().rotozoom(self.player.rot(), 1.0, true)?;
+        let text = texture_creator.create_texture_from_surface(&mut surf);
         self.canvas.fill_rect(plyr)?;
         
         self.present();
