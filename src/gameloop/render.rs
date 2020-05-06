@@ -50,10 +50,12 @@ impl GameState {
             xcoord += ITILEDIM;
         }
 
+        let screenrect = Rect::new(0, 0, dims.0, dims.1);
         //TODO: draw entities
 
         //draw player
         self.set_draw_color(255, 0, 0);
+        let ppt = Point::new(self.player.dims().x as i32, self.player.dims().y as i32);
         let pdim = self.player.dims();
         let xlen = ((pdim.x * 2.0) * DTILEDIM) as u32;
         let ylen = ((pdim.y * 2.0) * DTILEDIM) as u32;
@@ -61,8 +63,8 @@ impl GameState {
         let topy = (dims.1 / 2) as i32 - (pdim.y * DTILEDIM) as i32;
         let texture_creator = self.canvas.texture_creator();
         let surf = Surface::new(xlen, ylen, PixelFormatEnum::RGB24).unwrap().rotozoom(self.player.rot(), 1.0, true)?;
-        let text = texture_creator.create_texture_from_surface(&mut surf);
-        self.canvas.fill_rect(plyr)?;
+        let text = texture_creator.create_texture_from_surface(&mut surf).unwrap();
+        self.canvas.copy_ex(&text, None, Rect::new(topx, topy, xlen, ylen), self.player.rot(), ppt, false, false);
         
         self.present();
         Ok(true)
