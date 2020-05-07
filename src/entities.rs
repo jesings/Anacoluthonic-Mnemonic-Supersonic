@@ -57,7 +57,7 @@ pub trait Entity {
         true
     }
     fn rotate(&mut self, amt: f64) {
-        let mut mr = self.mut_rot();
+        let mr = self.mut_rot();
         *mr += amt;
     }
     fn change_pos(&mut self, dx: f64, dy: f64, gr: &Grid) -> bool {
@@ -74,8 +74,9 @@ pub trait Entity {
         mtv.y += dydt;
         let curvel = mtv.x.hypot(mtv.y);
         if curvel > mxv {
-            mtv.x *= curvel / mxv;
-            mtv.y *= curvel / mxv;
+            let dir = mtv.y.atan2(mtv.x);
+            mtv.x = mxv * dir.cos();
+            mtv.y = mxv * dir.sin();
         }
         true
     }
@@ -157,7 +158,7 @@ impl Player {
             health: 100.0,
             maxhealth: 100.0,
             velocity: Position {x: 0.0, y: 0.0},
-            maxvelocity: 10.0,
+            maxvelocity: 1.0,
             pos: Position {x: 100.0, y: 100.0},
             dims: Position {x: 0.5, y: 0.5},
             rot: 0.0,

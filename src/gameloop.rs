@@ -8,7 +8,7 @@ mod gamestate;
 mod render;
 mod event;
 
-static FRAMERATE: u32 = 240;
+static FRAMERATE: u32 = 60;
 
 fn listen(){
     let listener:TcpListener;
@@ -29,7 +29,7 @@ fn connect(mut stream: TcpStream){
 }
 
 pub fn gameloop() {
-    listen(); // comment for the rendering and stuff or whatever
+    //listen(); // comment for the rendering and stuff or whatever
     
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
@@ -47,12 +47,15 @@ pub fn gameloop() {
         Err(_e) => return,
     }
 
+    let mut gd = gamestate::GameData {
+        player: entities::Player::new(),
+        grid: grid,
+    };
 
     let mut gs = gamestate::GameState{
         canvas: canvas,
-        grid: grid,
-        player: entities::Player::new(),
         pump: sdl_context.event_pump().unwrap(),
+        scene: gamestate::Scenes::GamePlay(gd),
     };
 
     'running: loop {

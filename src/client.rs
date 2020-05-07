@@ -1,19 +1,14 @@
 use std::net::{TcpListener,TcpStream,UdpSocket,IpAddr,Ipv4Addr,SocketAddr};
-use std::io::{Read,Write};
+use std::io::{Read,Write,Error};
 
-pub fn connect(m: String){
+pub fn connect(m: String) -> Result<bool, Error>{
     let ip:SocketAddr;
-    match m.parse::<IpAddr>(){
-        Ok(q)=>ip=SocketAddr::new(q,54952),
-        Err(e)=>{eprintln!("{}",e);return},
-    }
+    ip=SocketAddr::new(m.parse::<IpAddr>().unwrap(),54952);
     println!("Attempting to connect to {}",ip);
     let mut stream:TcpStream;
-    match TcpStream::connect(ip){
-        Ok(q)=>stream=q,
-        Err(e)=>{eprintln!("{}",e);return},
-    }
+    stream = TcpStream::connect(ip)?;
     let mut buf=[0;10];
-    stream.read(&mut buf);
+    stream.read(&mut buf)?;
     println!("{:?}",buf);
+    Ok(true)
 }
