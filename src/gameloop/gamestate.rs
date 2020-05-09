@@ -27,29 +27,32 @@ pub enum Scenes {
 pub struct GameState {
     pub canvas: WindowCanvas,
     pub pump: sdl2::EventPump,
+    pub console: bool,
     //pub entities: &dyn T, where T is Entity
     pub scene: Scenes,
 }
 
 impl GameState {
-    pub fn clear(&mut self) {
-        self.canvas.clear()
-    }
-    pub fn present(&mut self) {
-        self.canvas.present()
-    }
-    pub fn set_draw_color(&mut self, r: u8, g: u8, b: u8) {
-        self.canvas.set_draw_color(Color::RGB(r, g, b))
-    }
     pub fn update(&mut self) -> bool {
-        let kbs =  self.pump.keyboard_state();
-        let left = kbs.is_scancode_pressed(Scancode::A) || kbs.is_scancode_pressed(Scancode::Left);
-        let down = kbs.is_scancode_pressed(Scancode::S) || kbs.is_scancode_pressed(Scancode::Down);
-        let right = kbs.is_scancode_pressed(Scancode::D) || kbs.is_scancode_pressed(Scancode::Right);
-        let up = kbs.is_scancode_pressed(Scancode::W) || kbs.is_scancode_pressed(Scancode::Up);
+        let mut left = false;
+        let mut down = false;
+        let mut right  = false;
+        let mut up  = false;
+        match self.console {
+            true => {
 
-        //get what keycodes symbolize, we can use client keyboard settings to do that
-        //After, serialize and send over
+            },
+            false => {
+                //get what keycodes symbolize, we can use client keyboard settings to do that
+                //After, serialize and send over
+                let kbs = self.pump.keyboard_state();
+                left = kbs.is_scancode_pressed(Scancode::A) || kbs.is_scancode_pressed(Scancode::Left);
+                down = kbs.is_scancode_pressed(Scancode::S) || kbs.is_scancode_pressed(Scancode::Down);
+                right = kbs.is_scancode_pressed(Scancode::D) || kbs.is_scancode_pressed(Scancode::Right);
+                up = kbs.is_scancode_pressed(Scancode::W) || kbs.is_scancode_pressed(Scancode::Up);
+            },
+        }
+
 
         match &mut self.scene {
             Scenes::GamePlay(gdata) => {

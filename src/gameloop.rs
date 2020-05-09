@@ -1,9 +1,11 @@
 use std::net::{TcpListener,TcpStream,UdpSocket,IpAddr,Ipv4Addr,SocketAddr};
 use std::time::{Duration, Instant};
 use std::io::{Read,Write};
+use sdl2::ttf::init;
 
 #[path = "grid.rs"] mod grid;
 #[path = "entities.rs"] mod entities;
+#[path = "menu.rs"] mod menu;
 mod gamestate;
 mod render;
 mod event;
@@ -41,6 +43,8 @@ pub fn gameloop() {
 
     let mut canvas = window.into_canvas().build().unwrap();
 
+    let ttf_context = sdl2::ttf::init().unwrap();
+
     let mut grid: grid::Grid;
     match grid::Grid::random_grid(400, 400) {
         Ok(g) => grid = g,
@@ -55,6 +59,7 @@ pub fn gameloop() {
     let mut gs = gamestate::GameState{
         canvas: canvas,
         pump: sdl_context.event_pump().unwrap(),
+        console: false,
         scene: gamestate::Scenes::GamePlay(gd),
     };
 

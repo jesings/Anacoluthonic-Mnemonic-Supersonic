@@ -14,8 +14,8 @@ static DTILEDIM: f64 = TILEDIM as f64;
 
 impl GameState {
     pub fn render(&mut self) -> Result<bool, String> {
-        self.set_draw_color(0, 0, 0);
-        self.clear();
+        self.canvas.set_draw_color(Color::RGB(0, 0, 0));
+        self.canvas.clear();
         let dims = self.canvas.output_size()?;
 
 
@@ -76,7 +76,7 @@ impl GameState {
             },
             Scenes::Menu(t) => {},
         }
-        self.present();
+        self.canvas.present();
         Ok(true)
     }
 }
