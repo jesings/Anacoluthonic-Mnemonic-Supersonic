@@ -1,10 +1,14 @@
 use sdl2::render::{WindowCanvas};
-use super::grid::Grid;
-use super::entities::{Player, Entity};
 use sdl2::pixels::Color;
 use sdl2::keyboard::Scancode;
 use sdl2::keyboard::KeyboardState;
 use sdl2::mouse::MouseState;
+use sdl2::VideoSubsystem;
+use sdl2::event::Event;
+
+use super::grid::Grid;
+use super::entities::{Player, Entity};
+use super::console::*;
 
 static ACCEL: f64 = 1.0 / 64.0;
 pub struct GameData {
@@ -27,8 +31,9 @@ pub enum Scenes {
 pub struct GameState {
     pub canvas: WindowCanvas,
     pub pump: sdl2::EventPump,
-    pub console: bool,
+    pub console: Option<Console>,
     //pub entities: &dyn T, where T is Entity
+    pub vidsub: VideoSubsystem,
     pub scene: Scenes,
 }
 
@@ -38,21 +43,42 @@ impl GameState {
         let mut down = false;
         let mut right  = false;
         let mut up  = false;
-        match self.console {
-            true => {
 
-            },
-            false => {
-                //get what keycodes symbolize, we can use client keyboard settings to do that
-                //After, serialize and send over
-                let kbs = self.pump.keyboard_state();
-                left = kbs.is_scancode_pressed(Scancode::A) || kbs.is_scancode_pressed(Scancode::Left);
-                down = kbs.is_scancode_pressed(Scancode::S) || kbs.is_scancode_pressed(Scancode::Down);
-                right = kbs.is_scancode_pressed(Scancode::D) || kbs.is_scancode_pressed(Scancode::Right);
-                up = kbs.is_scancode_pressed(Scancode::W) || kbs.is_scancode_pressed(Scancode::Up);
-            },
+        for event in self.pump.poll_iter() {
+            match event {
+                Event::TextInput{text, ..} => {
+                    println!("{}", text == "`");
+                    if text == "`" {
+                        self.disable_console();
+                        break;
+                    }
+                },
+                Event::KeyDown{scancode, ..} => {
+                    if scancode == Some(Scancode::Grave) {
+                        if self.console.is_some() {
+                            self.disable_console();
+                        } else {
+                            self.enable_console();
+                        }
+                        break;
+                    }
+                },
+                Event::Quit{..} => {
+                    return false;
+                },
+                _ => {},
+            }
         }
 
+        if !self.console.is_some() {
+            //get what keycodes symbolize, we can use client keyboard settings to do that
+            //After, serialize and send over
+            let kbs = self.pump.keyboard_state();
+            left = kbs.is_scancode_pressed(Scancode::A) || kbs.is_scancode_pressed(Scancode::Left);
+            down = kbs.is_scancode_pressed(Scancode::S) || kbs.is_scancode_pressed(Scancode::Down);
+            right = kbs.is_scancode_pressed(Scancode::D) || kbs.is_scancode_pressed(Scancode::Right);
+            up = kbs.is_scancode_pressed(Scancode::W) || kbs.is_scancode_pressed(Scancode::Up);
+        }
 
         match &mut self.scene {
             Scenes::GamePlay(gdata) => {

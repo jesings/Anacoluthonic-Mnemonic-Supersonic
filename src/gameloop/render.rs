@@ -76,6 +76,12 @@ impl GameState {
             },
             Scenes::Menu(t) => {},
         }
+        match &self.console {
+            Some(c) => {
+                c.render_console(&mut self.canvas);
+            },
+            None => {},
+        }
         self.canvas.present();
         Ok(true)
     }

@@ -9,6 +9,7 @@ use sdl2::ttf::init;
 mod gamestate;
 mod render;
 mod event;
+mod console;
 
 static FRAMERATE: u32 = 60;
 
@@ -59,21 +60,22 @@ pub fn gameloop() {
     let mut gs = gamestate::GameState{
         canvas: canvas,
         pump: sdl_context.event_pump().unwrap(),
-        console: false,
+        console: None,
+        vidsub: video_subsystem,
         scene: gamestate::Scenes::GamePlay(gd),
     };
 
     'running: loop {
         let begin = Instant::now();
 
-        match gs.handle_events() {
-            false => break 'running,
-            true => {},
-        }
+        //match gs.handle_events() {
+        //    false => break 'running,
+        //    true => {},
+        //}
 
         match gs.update() {
             true => {},
-            false => {},
+            false => break 'running,
         }
 
         match gs.render() {
