@@ -2,7 +2,7 @@ use sdl2::event::Event;
 use super::*;
 use self::gamestate::*;
 
-impl GameState {
+impl GameState<'_, '_> {
     pub fn handle_events(&mut self) -> bool {
         for event in self.pump.poll_iter() {
             match event {

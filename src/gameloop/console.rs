@@ -6,7 +6,7 @@ use super::gamestate::*;
 use sdl2::pixels::PixelFormatEnum;
 use sdl2::surface::Surface;
 
-impl GameState {
+impl GameState<'_, '_> {
     pub fn enable_console(&mut self){
         self.vidsub.text_input().start();
         self.console = Some(Console::new());

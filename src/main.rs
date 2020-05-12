@@ -1,6 +1,8 @@
 use std::env;
+
 mod gameloop;
 mod client;
+
 
 fn main() {
     let mut args: Vec<String> = env::args().collect();

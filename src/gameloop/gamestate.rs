@@ -5,6 +5,8 @@ use sdl2::keyboard::KeyboardState;
 use sdl2::mouse::MouseState;
 use sdl2::VideoSubsystem;
 use sdl2::event::Event;
+use sdl2::ttf::Font;
+use std::collections::HashMap;
 
 use super::grid::Grid;
 use super::entities::{Player, Entity};
@@ -28,16 +30,17 @@ pub enum Scenes {
     //No Clue what to put here
 }
 
-pub struct GameState {
+pub struct GameState<'ttf, 'a> {
     pub canvas: WindowCanvas,
     pub pump: sdl2::EventPump,
     pub console: Option<Console>,
+    pub fonts: HashMap<String, Font<'ttf, 'a>>,
     //pub entities: &dyn T, where T is Entity
     pub vidsub: VideoSubsystem,
     pub scene: Scenes,
 }
 
-impl GameState {
+impl GameState<'_, '_> {
     pub fn update(&mut self) -> bool {
         let mut left = false;
         let mut down = false;
@@ -47,11 +50,6 @@ impl GameState {
         for event in self.pump.poll_iter() {
             match event {
                 Event::TextInput{text, ..} => {
-                    println!("{}", text == "`");
-                    if text == "`" {
-                        self.disable_console();
-                        break;
-                    }
                 },
                 Event::KeyDown{scancode, ..} => {
                     if scancode == Some(Scancode::Grave) {

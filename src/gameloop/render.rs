@@ -12,7 +12,7 @@ static TILEDIM: u32 = 20;
 static ITILEDIM: i32 = TILEDIM as i32;
 static DTILEDIM: f64 = TILEDIM as f64;
 
-impl GameState {
+impl GameState<'_, '_> {
     pub fn render(&mut self) -> Result<bool, String> {
         self.canvas.set_draw_color(Color::RGB(0, 0, 0));
         self.canvas.clear();

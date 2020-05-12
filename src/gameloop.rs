@@ -1,6 +1,10 @@
 use std::net::{TcpListener,TcpStream,UdpSocket,IpAddr,Ipv4Addr,SocketAddr};
 use std::time::{Duration, Instant};
 use std::io::{Read,Write};
+use std::collections::HashMap;
+use std::fs::read_dir;
+use sdl2::ttf::Font;
+
 use sdl2::ttf::init;
 
 #[path = "grid.rs"] mod grid;
@@ -46,6 +50,26 @@ pub fn gameloop() {
 
     let ttf_context = sdl2::ttf::init().unwrap();
 
+
+    let mut font_hash = HashMap::new();
+
+    //Note, requires cargo to be run from project root, but we'll deal with it later
+    let paths = read_dir("data/fonts/").unwrap();
+    for path in paths {
+        let name = path.unwrap().path();
+        let ext = match name.extension() {
+            Some(g) => {g},
+            None => continue,
+        };
+        if ext == "otf" || ext == "ttf" {
+            let key = name.file_stem().unwrap().to_str().unwrap();
+            let value = ttf_context.load_font(name.clone(), 12).unwrap();
+            font_hash.insert(String::from(key), value);
+            println!("Font added: {}", key);
+        }
+    }
+
+
     let mut grid: grid::Grid;
     match grid::Grid::random_grid(400, 400) {
         Ok(g) => grid = g,
@@ -61,6 +85,7 @@ pub fn gameloop() {
         canvas: canvas,
         pump: sdl_context.event_pump().unwrap(),
         console: None,
+        fonts: font_hash,
         vidsub: video_subsystem,
         scene: gamestate::Scenes::GamePlay(gd),
     };
