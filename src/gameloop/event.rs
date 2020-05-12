@@ -7,7 +7,6 @@ impl GameState<'_, '_> {
         for event in self.pump.poll_iter() {
             match event {
                 Event::Quit {..} => {println!("Quitting"); return false},
-                Event::KeyDown {keycode, ..} => {keycode;},
                 _ => {},
             }
         }

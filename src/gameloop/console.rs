@@ -20,7 +20,7 @@ impl GameState<'_, '_> {
 pub struct Console {
     hist: Vec<String>,
     outp: Vec<String>,
-    inp: String,
+    pub inp: String,
     //size and font??
 }
 

@@ -1,4 +1,3 @@
-use super::*;
 use super::gamestate::*;
 use super::grid::Tile;
 use super::entities::*;
@@ -74,7 +73,7 @@ impl GameState<'_, '_> {
                 }
                 
             },
-            Scenes::Menu(t) => {},
+            Scenes::Menu(_t) => {},
         }
         match &self.console {
             Some(c) => {

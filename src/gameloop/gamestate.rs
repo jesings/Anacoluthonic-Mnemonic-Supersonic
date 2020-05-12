@@ -11,6 +11,7 @@ use std::collections::HashMap;
 use super::grid::Grid;
 use super::entities::{Player, Entity};
 use super::console::*;
+use super::menu::{Button, Slider};
 
 static ACCEL: f64 = 1.0 / 64.0;
 pub struct GameData {
@@ -20,8 +21,8 @@ pub struct GameData {
 }
 pub struct MenuItems {
     name: String,
-    //buttons: 
-    //sliders: 
+    buttons: Vec<Button>,
+    sliders: Vec<Slider>,
     //??? the above need function callbacks, not sure about click and drag for sliders
 }
 pub enum Scenes {
@@ -47,9 +48,11 @@ impl GameState<'_, '_> {
         let mut right  = false;
         let mut up  = false;
 
+        let mut text_accuum: String = String::new();
         for event in self.pump.poll_iter() {
             match event {
                 Event::TextInput{text, ..} => {
+                    text_accuum = text;
                 },
                 Event::KeyDown{scancode, ..} => {
                     if scancode == Some(Scancode::Grave) {
@@ -68,14 +71,19 @@ impl GameState<'_, '_> {
             }
         }
 
-        if !self.console.is_some() {
-            //get what keycodes symbolize, we can use client keyboard settings to do that
-            //After, serialize and send over
-            let kbs = self.pump.keyboard_state();
-            left = kbs.is_scancode_pressed(Scancode::A) || kbs.is_scancode_pressed(Scancode::Left);
-            down = kbs.is_scancode_pressed(Scancode::S) || kbs.is_scancode_pressed(Scancode::Down);
-            right = kbs.is_scancode_pressed(Scancode::D) || kbs.is_scancode_pressed(Scancode::Right);
-            up = kbs.is_scancode_pressed(Scancode::W) || kbs.is_scancode_pressed(Scancode::Up);
+        match &mut self.console {
+            None => {
+                //get what keycodes symbolize, we can use client keyboard settings to do that
+                //After, serialize and send over
+                let kbs = self.pump.keyboard_state();
+                left = kbs.is_scancode_pressed(Scancode::A) || kbs.is_scancode_pressed(Scancode::Left);
+                down = kbs.is_scancode_pressed(Scancode::S) || kbs.is_scancode_pressed(Scancode::Down);
+                right = kbs.is_scancode_pressed(Scancode::D) || kbs.is_scancode_pressed(Scancode::Right);
+                up = kbs.is_scancode_pressed(Scancode::W) || kbs.is_scancode_pressed(Scancode::Up);
+            },
+            Some(c) => {
+                c.inp.push_str(&text_accuum);
+            },
         }
 
         match &mut self.scene {

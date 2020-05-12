@@ -3,16 +3,13 @@ use std::time::{Duration, Instant};
 use std::io::{Read,Write};
 use std::collections::HashMap;
 use std::fs::read_dir;
-use sdl2::ttf::Font;
-
-use sdl2::ttf::init;
 
 #[path = "grid.rs"] mod grid;
 #[path = "entities.rs"] mod entities;
 #[path = "menu.rs"] mod menu;
 mod gamestate;
 mod render;
-mod event;
+//mod event;
 mod console;
 
 static FRAMERATE: u32 = 60;

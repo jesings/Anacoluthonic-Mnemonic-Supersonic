@@ -64,8 +64,17 @@ pub trait Entity {
         let mp = self.mut_pos();
         mp.x += dx;
         mp.y += dy;
-        //if grid square is not okay, subtract dx, dy back, return false
-        true
+        match gr.grid_coord(mp.x.floor() as usize, mp.y.floor() as usize) {
+            Some(t) => {
+                if t.passable {
+                    return true;
+                }
+            },
+            None => {},
+        }
+        mp.x -= dx;
+        mp.y -= dy;
+        false
     }
     fn change_vel(&mut self, dxdt: f64, dydt: f64) -> bool {
         let mxv = self.maxvel();
@@ -199,7 +208,7 @@ impl Entity for Player {
     }
 }
 
-pub fn revert_collision<E>(e1: E, e2: E) -> bool
-    where E: Entity {
-    false
-}
+//pub fn revert_collision<E>(e1: E, e2: E) -> bool
+//    where E: Entity {
+//    false
+//}
