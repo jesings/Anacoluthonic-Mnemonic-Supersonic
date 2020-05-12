@@ -50,7 +50,6 @@ pub fn gameloop() {
 
     let mut font_hash = HashMap::new();
 
-    //Note, requires cargo to be run from project root, but we'll deal with it later
     let paths = read_dir("data/fonts/").unwrap();
     for path in paths {
         let name = path.unwrap().path();
