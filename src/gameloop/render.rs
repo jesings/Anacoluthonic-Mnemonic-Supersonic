@@ -1,6 +1,7 @@
 use super::gamestate::*;
 use super::grid::Tile;
 use super::entities::*;
+use super::menu::*;
 use sdl2::rect::*;
 
 use sdl2::pixels::PixelFormatEnum;
@@ -18,7 +19,7 @@ impl GameState<'_, '_> {
         let dims = self.canvas.output_size()?;
 
 
-        match &mut self.scene {
+        match &self.scene {
             Scenes::GamePlay(gdata) => {
                 let pp = gdata.player.pos();
 
@@ -73,7 +74,12 @@ impl GameState<'_, '_> {
                 }
                 
             },
-            Scenes::Menu(_t) => {},
+            Scenes::Menu(m) => {
+              self.canvas.clear();
+              for button in &m.buttons {
+                button.render(&mut self.canvas, &mut self.fonts, dims.0 as i32, dims.1 as i32);
+              }
+            },
         }
         match &self.console {
             Some(c) => {

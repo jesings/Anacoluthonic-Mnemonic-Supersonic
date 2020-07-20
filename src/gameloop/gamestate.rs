@@ -20,9 +20,9 @@ pub struct GameData {
     pub player: Player,
 }
 pub struct MenuItems {
-    name: String,
-    buttons: Vec<Button>,
-    sliders: Vec<Slider>,
+    pub name: String,
+    pub buttons: Vec<Button>,
+    pub sliders: Vec<Slider>,
     //??? the above need function callbacks, not sure about click and drag for sliders
 }
 pub enum Scenes {

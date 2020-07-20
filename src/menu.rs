@@ -1,22 +1,25 @@
 use sdl2::rect::Rect;
 use sdl2::pixels::Color;
 use sdl2::ttf::Font;
+use sdl2::render::{WindowCanvas};
+
+use std::collections::HashMap;
 
 use super::gamestate::*;
 
-trait MenuRender {
-    fn render(&self, gs: &mut GameState, xdim: i32, ydim: i32) -> bool;
+pub trait MenuRender {
+    fn render(&self, canv: &mut WindowCanvas, fontmap: &mut HashMap<String, Font>, xdim: i32, ydim: i32) -> bool;
 }
 
 pub struct Button {
-    height: f32,
-    width: f32,
-    cx: f32,
-    cy: f32,
-    text: String,
+    pub height: f32,
+    pub width: f32,
+    pub cx: f32,
+    pub cy: f32,
+    pub text: String,
     //texture
-    font: String,
-    textcolor: Color,
+    pub font: String,
+    pub textcolor: Color,
 }
 
 pub struct Slider {
@@ -32,7 +35,7 @@ pub struct Slider {
 }
 
 impl MenuRender for Button {
-    fn render(&self, gs: &mut GameState, xdim: i32, ydim: i32) -> bool {
+    fn render(&self, canv: &mut WindowCanvas, fontmap: &mut HashMap<String, Font>, xdim: i32, ydim: i32) -> bool {
         let iwidth = (self.width * xdim as f32) as i32;
         let iheight = (self.height * ydim as f32) as i32;
         let icx = (self.cx * xdim as f32) as i32;
@@ -40,15 +43,15 @@ impl MenuRender for Button {
         let cornx = icx - iwidth / 2;
         let corny = icy - iheight / 2;
         let wrecked = Rect::new(cornx, corny, iwidth as u32, iheight as u32);
-        gs.canvas.set_draw_color(Color::RGB(0, 80, 160));
-        match gs.canvas.draw_rect(wrecked) {
+        canv.set_draw_color(Color::RGB(0, 80, 160));
+        match canv.draw_rect(wrecked) {
             Ok(_g) => {},
             Err(e) => {
                 eprintln!("Error rendering button background, {}", e);
                 return false;
             },
         }
-        let fontguy = match gs.fonts.get(&self.font) {
+        let fontguy = match fontmap.get(&self.font) {
             Some(g) => g,
             None => {
                 eprintln!("Error rendering specified font {}", self.font);
@@ -67,7 +70,7 @@ impl MenuRender for Button {
         let twidth = textsurf.width();
         let theight = textsurf.height();
 
-        println!("{} {}", twidth, theight);
+        //println!("{} {}", twidth, theight);
 
         //let texture_creator = canv.texture_creator();
         //let text = texture_creator.create_texture_from_surface(&mut textsurf).unwrap();
@@ -77,7 +80,7 @@ impl MenuRender for Button {
     }
 }
 impl MenuRender for Slider {
-    fn render(&self, gs: &mut GameState, xdim: i32, ydim: i32) -> bool {
+    fn render(&self, canv: &mut WindowCanvas, fontmap: &mut HashMap<String, Font>, xdim: i32, ydim: i32) -> bool {
         let iwidth = (self.width * xdim as f32) as i32;
         let iheight = (self.lineheight * ydim as f32) as i32;
         let icx = (self.cx * xdim as f32) as i32;
@@ -85,8 +88,8 @@ impl MenuRender for Slider {
         let cornx = icx - iwidth / 2;
         let corny = icy - iheight / 2;
         let wrecked = Rect::new(cornx, corny, iwidth as u32, iheight as u32);
-        gs.canvas.set_draw_color(Color::RGB(230, 60, 60));
-        match gs.canvas.draw_rect(wrecked) {
+        canv.set_draw_color(Color::RGB(230, 60, 60));
+        match canv.draw_rect(wrecked) {
             Ok(_g) => {},
             Err(e) => {
                 eprintln!("Error rendering slider background, {}", e);
@@ -99,8 +102,8 @@ impl MenuRender for Slider {
         let cornubx = nubx - nubcorn / 2;
         let cornuby = icy - nubcorn / 2;
         let nubwrecked = Rect::new(cornubx, cornuby, nubcorn as u32, nubcorn as u32);
-        gs.canvas.set_draw_color(Color::RGB(12, 250, 100));
-        match gs.canvas.draw_rect(nubwrecked) {
+        canv.set_draw_color(Color::RGB(12, 250, 100));
+        match canv.draw_rect(nubwrecked) {
             Ok(_g) => {},
             Err(e) => {
                 eprintln!("Error rendering slider background, {}", e);

@@ -4,6 +4,7 @@ use std::io::{Read,Write};
 use std::collections::HashMap;
 use std::fs::read_dir;
 use std::process::Command;
+use sdl2::pixels::Color;
 
 #[path = "grid.rs"] mod grid;
 #[path = "entities.rs"] mod entities;
@@ -61,6 +62,12 @@ pub fn gameloop(addr:String) {
         Err(_e) => return,
     }
 
+    let mut mainmenu = gamestate::MenuItems {
+      name: "Main menu".to_string(),
+      buttons: vec!(menu::Button {height: 0.1, width: 0.8, cx: 0.5, cy:  0.5, text: "Test".to_string(), font: "Inconsolata".to_string(), textcolor: Color::RGB(0, 255, 0)}),
+      sliders: vec!(),
+    };
+
     let mut gd = gamestate::GameData {
         player: entities::Player::new(),
         grid: grid,
@@ -73,6 +80,7 @@ pub fn gameloop(addr:String) {
         fonts: font_hash,
         vidsub: video_subsystem,
         scene: gamestate::Scenes::GamePlay(gd),
+        //scene: gamestate::Scenes::Menu(mainmenu),
     };
 
     'running: loop {
