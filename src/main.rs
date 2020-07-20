@@ -3,7 +3,7 @@ use std::path::Path;
 
 mod gameloop;
 mod client;
-
+mod server;
 
 fn main() {
     let mut args: Vec<String> = env::args().collect();
@@ -14,10 +14,10 @@ fn main() {
     env::set_current_dir(backtrack);
     env::set_current_dir(backtrack);
     
-    if args.len()==1 {
-        gameloop::gameloop();
+    if args.len()>1{
+        gameloop::gameloop(args.remove(1));
     }else{
-        client::connect(args.remove(1));
+        server::host();
     }
-    //sanity checks
+    //sanity checks (twitter engineering be like ree)
 }

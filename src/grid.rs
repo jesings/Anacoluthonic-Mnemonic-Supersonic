@@ -2,6 +2,7 @@ use std::io::{Error, ErrorKind};
 use std::io::prelude::*;
 use std::fs::File;
 use std::convert::TryInto;
+use rand_core::RngCore;
 
 macro_rules! maperror {
     ($x: expr, $y: expr, $($z: expr),*) => {
@@ -71,10 +72,11 @@ impl Grid{
         }
     }
 
-    pub fn random_grid(width: usize, height: usize) -> Result<Grid, std::io::Error> {
+    pub fn random_grid(width: usize, height: usize, seed:u128) -> Result<Grid, std::io::Error>{
+        let mut ayn: rand_pcg::Pcg64Mcg = rand_pcg::Pcg64Mcg::new(seed);
         let mut vecmap : Vec<u8> = Vec::with_capacity(width * height);
         for _i in 0 .. width * height {
-            vecmap.push(rand::random::<u8>());
+            vecmap.push((ayn.next_u32()&255) as u8);
         }
         Grid::new(vecmap, "random", width, height)
     }

@@ -8,6 +8,7 @@ use std::process::Command;
 #[path = "grid.rs"] mod grid;
 #[path = "entities.rs"] mod entities;
 #[path = "menu.rs"] mod menu;
+#[path = "client.rs"]mod client;
 mod gamestate;
 mod render;
 //mod event;
@@ -15,58 +16,13 @@ mod console;
 
 static FRAMERATE: u32 = 60;
 
-fn localip()->Result<SocketAddr,std::io::Error>{
-    let output = if cfg!(target_os="windows"){
-        return Err(std::io::Error::new(std::io::ErrorKind::Other,"imagine using windows"))
-    }else{
-        Command::new("sh").arg("-c").arg("ip address show | grep 192\\.168\\.[0-9]*\\.[0-9]* -ao --color=never | head -1 | tr -d [:space:]").output()?
-    };
-    let outstr = match String::from_utf8(output.stdout){
-        Ok(q)=>q,
-        Err(_)=>{return Err(std::io::Error::new(std::io::ErrorKind::Other,"couldnt convert ipaddr string for some reason"));},
-    };
-    Ok(SocketAddr::new(outstr.parse::<IpAddr>().unwrap(),54952))
-}
-fn globalip(){
-    let output = if cfg!(target_os="windows"){
-        eprintln!("imagine using windows");return
-    }else{
-        match Command::new("sh").arg("-c").arg("curl ifconfig.me").output(){Ok(q)=>q,Err(_)=>{eprintln!("could not find global ip address");return},}
-    };
-    let outstr = match String::from_utf8(output.stdout){
-        Ok(q)=>q,
-        Err(_)=>{eprintln!("could not find global ip address");return},
-    };
-    println!("global ip address is {}",outstr);
-}
+pub fn gameloop(addr:String) {
+    let mut stream = client::connect(addr).expect("could not connect to server"); // comment for the rendering and stuff or whatever
 
-
-fn listen(){
-    let a:SocketAddr = match localip(){
-        Ok(q)=>q,
-        Err(e)=>{eprintln!("{}",e);return},
-    };
-    println!("binding to {}",a);
-    globalip();
-    let listener:TcpListener;
-    match TcpListener::bind(a){
-        Ok(q)=>listener=q,
-        Err(e)=>{eprintln!("{}",e);return},
-    }
-    for s in listener.incoming(){
-        match s{
-            Ok(ss)=>connect(ss),
-            Err(e)=>{eprintln!("{}",e);},
-        }
-    }
-}
-
-fn connect(mut stream: TcpStream){
-    stream.write(&[69]);
-}
-
-pub fn gameloop() {
-    listen(); // comment for the rendering and stuff or whatever
+    let mut buf: [u8; 16]= [0; 16];
+    stream.read(&mut buf).expect("no seed recieved");
+    let seed:u128 = u128::from_le_bytes(buf);
+    println!("seed: {}",seed);
     
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
@@ -100,7 +56,7 @@ pub fn gameloop() {
 
 
     let mut grid: grid::Grid;
-    match grid::Grid::random_grid(400, 400) {
+    match grid::Grid::random_grid(400, 400, seed) {
         Ok(g) => grid = g,
         Err(_e) => return,
     }
