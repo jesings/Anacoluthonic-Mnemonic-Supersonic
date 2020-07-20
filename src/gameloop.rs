@@ -66,7 +66,10 @@ pub fn gameloop(addr:String) {
 
     let mut mainmenu = gamestate::MenuItems {
       name: "Main menu".to_string(),
-      buttons: vec!(menu::Button {height: 0.1, width: 0.8, cx: 0.5, cy:  0.5, text: "Test".to_string(), font: "Inconsolata".to_string(), textcolor: Color::RGB(0, 255, 0)}),
+      buttons: vec!(
+        menu::Button {height: 0.06, width: 0.5, cx: 0.5, cy:  0.7, text: "Start Game".to_string(), font: "Inconsolata".to_string(), textcolor: Color::RGB(255, 255, 255), bgcolor: Color::RGB(20, 60, 100), callback: menu::fdummy},
+        menu::Button {height: 0.06, width: 0.5, cx: 0.5, cy:  0.77, text: "Settings".to_string(), font: "Inconsolata".to_string(), textcolor: Color::RGB(255, 255, 255), bgcolor: Color::RGB(20, 60, 100), callback: menu::fdummy}
+        ),
       sliders: vec!(),
     };
 
@@ -81,8 +84,8 @@ pub fn gameloop(addr:String) {
         console: None,
         fonts: font_hash,
         vidsub: video_subsystem,
-        //scene: gamestate::Scenes::GamePlay(gd),
-        scene: gamestate::Scenes::Menu(mainmenu),
+        scene: gamestate::Scenes::GamePlay(gd),
+        //scene: gamestate::Scenes::Menu(mainmenu),
     };
 
     'running: loop {

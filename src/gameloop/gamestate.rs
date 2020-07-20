@@ -2,7 +2,7 @@ use sdl2::render::{WindowCanvas};
 use sdl2::pixels::Color;
 use sdl2::keyboard::Scancode;
 use sdl2::keyboard::KeyboardState;
-use sdl2::mouse::MouseState;
+use sdl2::mouse::*;
 use sdl2::VideoSubsystem;
 use sdl2::event::Event;
 use sdl2::ttf::Font;
@@ -55,6 +55,35 @@ impl GameState<'_, '_> {
             match event {
                 Event::TextInput{text, ..} => {
                     text_accuum = text;
+                },
+                Event::MouseButtonDown{x, y, mouse_btn, ..} => {
+                  let dims = match self.canvas.output_size() {
+                    Ok(f) => f,
+                    Err(_e) => (0, 0),
+                  };
+                  match mouse_btn {
+                    MouseButton::Left => {
+                      match &self.scene {
+                        Scenes::Menu(m) => {
+                          for button in &m.buttons {
+                              let iwidth = (button.width * dims.0 as f32) as i32;
+                              let iheight = (button.height * dims.1 as f32) as i32;
+                              let icx = (button.cx * dims.0 as f32) as i32;
+                              let icy = (button.cy * dims.1 as f32) as i32;
+                              let cornx = icx - iwidth / 2;
+                              let corny = icy - iheight / 2;
+                              if (x >= cornx && x <= (cornx + iwidth)) &&
+                                 (y >= corny && y <= (corny + iheight)) {
+                                  (button.callback)();
+                              }
+
+                          }
+                        },
+                        _ => {}
+                      }
+                    },
+                    _ => {},
+                  }
                 },
                 Event::KeyDown{scancode, ..} => {
                     if scancode == Some(Scancode::Grave) {

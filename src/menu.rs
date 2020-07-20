@@ -20,6 +20,8 @@ pub struct Button {
     //texture
     pub font: String,
     pub textcolor: Color,
+    pub bgcolor: Color,
+    pub callback: fn() -> bool,
 }
 
 pub struct Slider {
@@ -34,6 +36,11 @@ pub struct Slider {
     nubdims: f32,
 }
 
+pub fn fdummy() -> bool {
+  println!("Pushed button");
+  true
+}
+
 impl MenuRender for Button {
     fn render(&self, canv: &mut WindowCanvas, fontmap: &mut HashMap<String, Font>, xdim: i32, ydim: i32) -> bool {
         let iwidth = (self.width * xdim as f32) as i32;
@@ -43,8 +50,8 @@ impl MenuRender for Button {
         let cornx = icx - iwidth / 2;
         let corny = icy - iheight / 2;
         let wrecked = Rect::new(cornx, corny, iwidth as u32, iheight as u32);
-        canv.set_draw_color(Color::RGB(0, 80, 160));
-        match canv.draw_rect(wrecked) {
+        canv.set_draw_color(self.bgcolor);
+        match canv.fill_rect(wrecked) {
             Ok(_g) => {},
             Err(e) => {
                 eprintln!("Error rendering button background, {}", e);
