@@ -47,6 +47,8 @@ impl GameState<'_, '_> {
         let mut down = false;
         let mut right  = false;
         let mut up  = false;
+        let mut cw = false;
+        let mut ccw = false;
 
         let mut text_accuum: String = String::new();
         for event in self.pump.poll_iter() {
@@ -80,6 +82,8 @@ impl GameState<'_, '_> {
                 down = kbs.is_scancode_pressed(Scancode::S) || kbs.is_scancode_pressed(Scancode::Down);
                 right = kbs.is_scancode_pressed(Scancode::D) || kbs.is_scancode_pressed(Scancode::Right);
                 up = kbs.is_scancode_pressed(Scancode::W) || kbs.is_scancode_pressed(Scancode::Up);
+                ccw = kbs.is_scancode_pressed(Scancode::Q) || kbs.is_scancode_pressed(Scancode::Z);
+                cw = kbs.is_scancode_pressed(Scancode::E) || kbs.is_scancode_pressed(Scancode::X);
             },
             Some(c) => {
                 c.inp.push_str(&text_accuum);
@@ -88,34 +92,38 @@ impl GameState<'_, '_> {
 
         match &mut self.scene {
             Scenes::GamePlay(gdata) => {
-                let gpv = gdata.player.vel();
+                //let gpv = gdata.player.vel();
                 let rot = gdata.player.rot();
 
-                if up { 
-                    let ddxdt: f64 = rot.to_radians().cos() * ACCEL;
-                    let ddydt: f64 = rot.to_radians().sin() * ACCEL;
+                //if up {
+                //    let ddxdt: f64 = rot.to_radians().cos() * ACCEL;
+                //    let ddydt: f64 = rot.to_radians().sin() * ACCEL;
 
-                    gdata.player.change_vel(ddxdt, ddydt);
-                }
+                //    gdata.player.change_vel(ddxdt, ddydt);
+                //}
+                let updown: i8 = if up {-1} else {0} + if down {1} else {0};
+                let leftright: i8 = if left {-1} else {0} + if right {1} else {0};
+                gdata.player.move_ent(&gdata.grid, leftright, updown);
 
-                if down { 
-                    let dir = gpv.y.atan2(gpv.x);
-                    let mut ddxdt: f64 = -dir.cos() * 1.5 * ACCEL;
-                    let mut ddydt: f64 = -dir.sin() * 1.5 * ACCEL;
 
-                    //if the signs are not equal and back would cause direction change, set velocity to 0 instead
-                    if gpv.x.signum() != ddxdt.signum() && ddxdt.abs() > gpv.x.abs() {ddxdt = -gpv.x;}
-                    if gpv.y.signum() != ddydt.signum() && ddydt.abs() > gpv.y.abs() {ddydt = -gpv.y;}
-                    gdata.player.change_vel(ddxdt, ddydt);
-                }
+                //if down {
+                //    let dir = gpv.y.atan2(gpv.x);
+                //    let mut ddxdt: f64 = -dir.cos() * 1.5 * ACCEL;
+                //    let mut ddydt: f64 = -dir.sin() * 1.5 * ACCEL;
+
+                //    //if the signs are not equal and back would cause direction change, set velocity to 0 instead
+                //    if gpv.x.signum() != ddxdt.signum() && ddxdt.abs() > gpv.x.abs() {ddxdt = -gpv.x;}
+                //    if gpv.y.signum() != ddydt.signum() && ddydt.abs() > gpv.y.abs() {ddydt = -gpv.y;}
+                //    gdata.player.change_vel(ddxdt, ddydt);
+                //}
 
                 let mut rv: f64 = 0.0;
-                if right { rv += 3.0; }
-                if left { rv -= 3.0; }
+                if cw { rv += 3.0; }
+                if ccw { rv -= 3.0; }
                 gdata.player.rotate(rv);
 
                 //loop over all entities, for now we just do player
-                gdata.player.apply_vel(&gdata.grid);
+                //gdata.player.apply_vel(&gdata.grid);
                 //propagate changes to the server as well here
             },
             Scenes::Menu(t) => {},
