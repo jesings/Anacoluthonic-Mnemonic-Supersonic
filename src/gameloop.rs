@@ -27,6 +27,7 @@ pub fn gameloop(addr:String) {
     
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
+    sdl2::hint::set("SDL_HINT_RENDER_SCALE_QUALITY", "1");
 
     let window = video_subsystem.window("Anacoluthonic Mnemonic Supersonic", 800, 600)
         .position_centered()
@@ -49,7 +50,8 @@ pub fn gameloop(addr:String) {
         };
         if ext == "otf" || ext == "ttf" {
             let key = name.file_stem().unwrap().to_str().unwrap();
-            let value = ttf_context.load_font(name.clone(), 12).unwrap();
+            let mut value = ttf_context.load_font(name.clone(), 256).unwrap();
+            value.set_kerning(true);
             font_hash.insert(String::from(key), value);
             println!("Font added: {}", key);
         }
@@ -79,8 +81,8 @@ pub fn gameloop(addr:String) {
         console: None,
         fonts: font_hash,
         vidsub: video_subsystem,
-        scene: gamestate::Scenes::GamePlay(gd),
-        //scene: gamestate::Scenes::Menu(mainmenu),
+        //scene: gamestate::Scenes::GamePlay(gd),
+        scene: gamestate::Scenes::Menu(mainmenu),
     };
 
     'running: loop {

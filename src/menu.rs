@@ -67,14 +67,20 @@ impl MenuRender for Button {
             },
         };
 
-        let twidth = textsurf.width();
-        let theight = textsurf.height();
+        let tratio = textsurf.width() as f32 / textsurf.height() as f32;
+        let bratio = iwidth as f32 / iheight as f32;
+        let newwidth = if tratio < bratio {(iheight as f32 * tratio) as u32} else {iwidth as u32};
+        let newheight = if tratio < bratio {iheight as u32} else {(iwidth as f32 / bratio) as u32};
 
-        //println!("{} {}", twidth, theight);
+        let cornx2 = cornx + ((iwidth - newwidth as i32) / 2) as i32;
+        let corny2 = corny + ((iheight - newheight as i32) / 2) as i32;
 
-        //let texture_creator = canv.texture_creator();
-        //let text = texture_creator.create_texture_from_surface(&mut textsurf).unwrap();
-        //match self.canvas.copy_ex(&text, None, Rect::new(, topy, xlen, ylen), gdata.player.rot(), ppt, false, false) {
+        let texture_creator = canv.texture_creator();
+        let text = texture_creator.create_texture_from_surface(&mut textsurf).unwrap();
+        match canv.copy(&text, None, Rect::new(cornx2, corny2, newwidth, newheight)) {
+            Ok(_f) => {},
+            Err(_e) => {eprintln!("error in rendering button");},
+        }
         
         true
     }
