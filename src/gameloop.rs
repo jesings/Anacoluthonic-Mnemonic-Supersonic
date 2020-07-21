@@ -37,6 +37,7 @@ pub fn gameloop(addr:String) {
     
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
+    sdl2::hint::set("SDL_HINT_RENDER_SCALE_QUALITY", "1");
 
     let window = video_subsystem.window("Anacoluthonic Mnemonic Supersonic", 800, 600)
         .position_centered()
@@ -59,7 +60,8 @@ pub fn gameloop(addr:String) {
         };
         if ext == "otf" || ext == "ttf" {
             let key = name.file_stem().unwrap().to_str().unwrap();
-            let value = ttf_context.load_font(name.clone(), 12).unwrap();
+            let mut value = ttf_context.load_font(name.clone(), 256).unwrap();
+            value.set_kerning(true);
             font_hash.insert(String::from(key), value);
             println!("Font added: {}", key);
         }
@@ -73,7 +75,10 @@ pub fn gameloop(addr:String) {
 
     let mut mainmenu = gamestate::MenuItems {
       name: "Main menu".to_string(),
-      buttons: vec!(menu::Button {height: 0.1, width: 0.8, cx: 0.5, cy:  0.5, text: "Test".to_string(), font: "Inconsolata".to_string(), textcolor: Color::RGB(0, 255, 0)}),
+      buttons: vec!(
+        menu::Button {height: 0.06, width: 0.5, cx: 0.5, cy:  0.7, text: "Start Game".to_string(), font: "Inconsolata".to_string(), textcolor: Color::RGB(255, 255, 255), bgcolor: Color::RGB(20, 60, 100), callback: menu::fdummy},
+        menu::Button {height: 0.06, width: 0.5, cx: 0.5, cy:  0.77, text: "Settings".to_string(), font: "Inconsolata".to_string(), textcolor: Color::RGB(255, 255, 255), bgcolor: Color::RGB(20, 60, 100), callback: menu::fdummy}
+        ),
       sliders: vec!(),
     };
 

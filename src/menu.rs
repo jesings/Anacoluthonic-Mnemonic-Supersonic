@@ -20,6 +20,8 @@ pub struct Button {
     //texture
     pub font: String,
     pub textcolor: Color,
+    pub bgcolor: Color,
+    pub callback: fn() -> bool,
 }
 
 pub struct Slider {
@@ -34,6 +36,11 @@ pub struct Slider {
     nubdims: f32,
 }
 
+pub fn fdummy() -> bool {
+  println!("Pushed button");
+  true
+}
+
 impl MenuRender for Button {
     fn render(&self, canv: &mut WindowCanvas, fontmap: &mut HashMap<String, Font>, xdim: i32, ydim: i32) -> bool {
         let iwidth = (self.width * xdim as f32) as i32;
@@ -43,8 +50,8 @@ impl MenuRender for Button {
         let cornx = icx - iwidth / 2;
         let corny = icy - iheight / 2;
         let wrecked = Rect::new(cornx, corny, iwidth as u32, iheight as u32);
-        canv.set_draw_color(Color::RGB(0, 80, 160));
-        match canv.draw_rect(wrecked) {
+        canv.set_draw_color(self.bgcolor);
+        match canv.fill_rect(wrecked) {
             Ok(_g) => {},
             Err(e) => {
                 eprintln!("Error rendering button background, {}", e);
@@ -67,14 +74,20 @@ impl MenuRender for Button {
             },
         };
 
-        let twidth = textsurf.width();
-        let theight = textsurf.height();
+        let tratio = textsurf.width() as f32 / textsurf.height() as f32;
+        let bratio = iwidth as f32 / iheight as f32;
+        let newwidth = if tratio < bratio {(iheight as f32 * tratio) as u32} else {iwidth as u32};
+        let newheight = if tratio < bratio {iheight as u32} else {(iwidth as f32 / bratio) as u32};
 
-        //println!("{} {}", twidth, theight);
+        let cornx2 = cornx + ((iwidth - newwidth as i32) / 2) as i32;
+        let corny2 = corny + ((iheight - newheight as i32) / 2) as i32;
 
-        //let texture_creator = canv.texture_creator();
-        //let text = texture_creator.create_texture_from_surface(&mut textsurf).unwrap();
-        //match self.canvas.copy_ex(&text, None, Rect::new(, topy, xlen, ylen), gdata.player.rot(), ppt, false, false) {
+        let texture_creator = canv.texture_creator();
+        let text = texture_creator.create_texture_from_surface(&mut textsurf).unwrap();
+        match canv.copy(&text, None, Rect::new(cornx2, corny2, newwidth, newheight)) {
+            Ok(_f) => {},
+            Err(_e) => {eprintln!("error in rendering button");},
+        }
         
         true
     }
