@@ -29,8 +29,9 @@ pub fn gameloop(addr:String) {
     let pln:u8 = buf[1];
     stream.read(&mut buf).expect("no seed recieved");
     let seed:u128 = u128::from_le_bytes(buf);
-    println!("pid: {}/{} seed: {}",pid,pln,seed);
-    let a:SocketAddr = server::localip(server::PORT + 1 + pid as u16).expect("could not get local ip"); // using different udp ports for local testing
+    println!("pid: {}/{} seed: {} ({:?})",pid,pln,seed,stream);
+    let iptst = server::localip().expect("could not get localip");
+    let a:SocketAddr =  SocketAddr::new(iptst, if iptst==sip.ip() {server::PORT + 1 + pid as u16} else {server::PORT});
     let mut udps = UdpSocket::bind(a).expect("could not bind udp port!!!");
     let mut posbuf: [u8; 17] = [0; 17];
         

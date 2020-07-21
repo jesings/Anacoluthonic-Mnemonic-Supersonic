@@ -1,4 +1,4 @@
-use std::net::{TcpListener,TcpStream,UdpSocket,IpAddr,Ipv4Addr,SocketAddr};
+use std::net::{TcpListener,TcpStream,UdpSocket,IpAddr,SocketAddr};
 use std::io::{Read,Write};
 use std::process::Command;
 use std::convert::TryInto;
@@ -9,7 +9,7 @@ use std::convert::TryInto;
 static PLAYERS:u8 = 2; // should be configurable at server creation later
 pub static PORT:u16 = 54952;
 
-pub fn localip(port:u16)->Result<SocketAddr,std::io::Error>{
+pub fn localip()->Result<IpAddr,std::io::Error>{
     let output = if cfg!(target_os="windows"){
         return Err(std::io::Error::new(std::io::ErrorKind::Other,"imagine using windows"))
     }else{
@@ -19,7 +19,7 @@ pub fn localip(port:u16)->Result<SocketAddr,std::io::Error>{
         Ok(q)=>q,
         Err(_)=>{return Err(std::io::Error::new(std::io::ErrorKind::Other,"couldnt convert ipaddr string for some reason"));},
     };
-    Ok(SocketAddr::new(outstr.parse::<IpAddr>().unwrap(),port))
+    Ok(outstr.parse::<IpAddr>().unwrap())
 }
 
 fn globalip(){
@@ -39,8 +39,8 @@ pub fn host(){
     globalip();
     let seed:u128 = rand::random::<u128>();
     println!("seed: {}",seed);
-    let a:SocketAddr = match localip(54952){
-        Ok(q)=>q,
+    let a:SocketAddr = match localip(){
+        Ok(q)=>SocketAddr::new(q,PORT),
         Err(e)=>{eprintln!("{}",e);return},
     };
     println!("binding to {}",a);
@@ -53,7 +53,10 @@ pub fn host(){
     let mut players: Vec<entities::Player> = Vec::new();
     for i in 0..PLAYERS{
         match listener.accept(){
-            Ok((q,u))=>{sss.push(q);adr.push(u);},
+            Ok((q,u))=>{
+                //println!("{:?}",q);
+                sss.push(q);
+                adr.push(u);},
             Err(_)=>{},
         };
     }
@@ -80,7 +83,7 @@ pub fn host(){
 }
 
 fn connect(mut s: &TcpStream, seed: u128, pid: u8){
-    println!("{:?}",s);
+    //println!("{:?}",s);
     s.write(&[pid,PLAYERS]);
     s.write(&(seed.to_le_bytes()));
 }
