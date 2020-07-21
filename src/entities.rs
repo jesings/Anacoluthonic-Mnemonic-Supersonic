@@ -1,4 +1,5 @@
 use super::grid::*;
+use std::convert::TryInto;
 
 #[derive(Clone, Copy)]
 pub struct Position{pub x: f64, pub y: f64}
@@ -222,6 +223,21 @@ impl Entity for Player {
     }
     fn mut_rot(&mut self) -> &mut f64 {
         &mut self.rot
+    }
+}
+
+// packet generation functions im putting here because i was getting weird module chaining errors otherwise idk
+pub fn setposbuf(posbuf: &[u8], players: &mut Vec<Player>) {
+    let mut p = players[posbuf[0]as usize].mut_pos();
+    p.x = f64::from_le_bytes(posbuf[1..9].try_into().unwrap());
+    p.y = f64::from_le_bytes(posbuf[9..17].try_into().unwrap());
+}
+pub fn getposbuf(pid: u8, pl: &Player, posbuf: &mut [u8]){
+    posbuf[0]=pid;
+    let p = pl.pos();
+    for (i,e) in p.x.to_le_bytes().iter().zip(p.y.to_le_bytes().iter()).enumerate(){
+        posbuf[i+1]=*e.0;
+        posbuf[i+9]=*e.1;
     }
 }
 

@@ -10,6 +10,8 @@ use sdl2::pixels::Color;
 #[path = "entities.rs"] mod entities;
 #[path = "menu.rs"] mod menu;
 #[path = "client.rs"]mod client;
+#[path = "server.rs"]mod server;
+
 mod gamestate;
 mod render;
 //mod event;
@@ -18,12 +20,20 @@ mod console;
 static FRAMERATE: u32 = 60;
 
 pub fn gameloop(addr:String) {
-    let mut stream = client::connect(addr).expect("could not connect to server"); // comment for the rendering and stuff or whatever
+    let sip:SocketAddr = SocketAddr::new(addr.parse::<IpAddr>().expect("thats not an ip address holy shit im freaking out"),server::PORT);
+    let mut stream = client::connect(sip).expect("could not connect to server");
 
     let mut buf: [u8; 16]= [0; 16];
+    stream.read(&mut buf).expect("no pid");
+    let pid:u8 = buf[0];
+    let pln:u8 = buf[1];
     stream.read(&mut buf).expect("no seed recieved");
     let seed:u128 = u128::from_le_bytes(buf);
-    println!("seed: {}",seed);
+    println!("pid: {}/{} seed: {}",pid,pln,seed);
+    let a:SocketAddr = server::localip(server::PORT + 1 + pid as u16).expect("could not get local ip"); // using different udp ports for local testing
+    let mut udps = UdpSocket::bind(a).expect("could not bind udp port!!!");
+    let mut posbuf: [u8; 17] = [0; 17];
+        
     
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
@@ -55,7 +65,6 @@ pub fn gameloop(addr:String) {
         }
     }
 
-
     let mut grid: grid::Grid;
     match grid::Grid::random_grid(400, 400, seed) {
         Ok(g) => grid = g,
@@ -68,9 +77,14 @@ pub fn gameloop(addr:String) {
       sliders: vec!(),
     };
 
+    let mut pls: Vec<entities::Player> = Vec::new();
+    for _ in 0..pln {
+        pls.push(entities::Player::new());
+    }
     let mut gd = gamestate::GameData {
-        player: entities::Player::new(),
+        players: pls,
         grid: grid,
+        pid: pid as usize,
     };
 
     let mut gs = gamestate::GameState{
@@ -96,6 +110,23 @@ pub fn gameloop(addr:String) {
             false => break 'running,
         }
 
+        match &mut gs.scene {
+            gamestate::Scenes::GamePlay(q)=>{
+                entities::getposbuf(q.pid as u8, &q.players[q.pid], &mut posbuf);
+                //println!("sent {:?}",&posbuf);
+                udps.send_to(&posbuf,sip);
+                for i in 1..pln{
+                    match udps.recv_from(&mut posbuf){
+                        Ok(_)=>{
+                            //println!("recieved {:?}",&posbuf);
+                            entities::setposbuf(&posbuf, &mut q.players);},
+                        Err(e)=>{eprintln!("{}",e);},
+                    };
+                }
+            },
+            _=>{},
+        };
+        
         match gs.render() {
             Ok(_r) => {},
             Err(e) => eprintln!("{}", e),

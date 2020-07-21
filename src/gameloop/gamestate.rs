@@ -17,7 +17,8 @@ static ACCEL: f64 = 1.0 / 64.0;
 pub struct GameData {
     pub grid: Grid,
     //&entities????
-    pub player: Player,
+    pub players: Vec<Player>,
+    pub pid: usize, // pos of clients player in player vecotr
 }
 pub struct MenuItems {
     pub name: String,
@@ -93,7 +94,7 @@ impl GameState<'_, '_> {
         match &mut self.scene {
             Scenes::GamePlay(gdata) => {
                 //let gpv = gdata.player.vel();
-                let rot = gdata.player.rot();
+                let rot = gdata.players[gdata.pid].rot();
 
                 //if up {
                 //    let ddxdt: f64 = rot.to_radians().cos() * ACCEL;
@@ -103,7 +104,7 @@ impl GameState<'_, '_> {
                 //}
                 let updown: i8 = if up {-1} else {0} + if down {1} else {0};
                 let leftright: i8 = if left {-1} else {0} + if right {1} else {0};
-                gdata.player.move_ent(&gdata.grid, leftright, updown);
+                gdata.players[gdata.pid].move_ent(&gdata.grid, leftright, updown);
 
 
                 //if down {
@@ -120,7 +121,7 @@ impl GameState<'_, '_> {
                 let mut rv: f64 = 0.0;
                 if cw { rv += 3.0; }
                 if ccw { rv -= 3.0; }
-                gdata.player.rotate(rv);
+                gdata.players[gdata.pid].rotate(rv);
 
                 //loop over all entities, for now we just do player
                 //gdata.player.apply_vel(&gdata.grid);

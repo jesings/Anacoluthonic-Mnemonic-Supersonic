@@ -1,11 +1,15 @@
 use std::net::{TcpListener,TcpStream,UdpSocket,IpAddr,Ipv4Addr,SocketAddr};
 use std::io::{Read,Write};
 use std::process::Command;
+use std::convert::TryInto;
 
-static PLAYERS:u8 = 2;
-static PORT:u16 = 54952;
+#[path = "grid.rs"] mod grid;
+#[path = "entities.rs"] mod entities;
 
-fn localip(port:u16)->Result<SocketAddr,std::io::Error>{
+static PLAYERS:u8 = 2; // should be configurable at server creation later
+pub static PORT:u16 = 54952;
+
+pub fn localip(port:u16)->Result<SocketAddr,std::io::Error>{
     let output = if cfg!(target_os="windows"){
         return Err(std::io::Error::new(std::io::ErrorKind::Other,"imagine using windows"))
     }else{
@@ -44,16 +48,39 @@ pub fn host(){
         Ok(q)=>q,
         Err(e)=>{eprintln!("{}",e);return},
     };
-    
-    for s in listener.incoming(){
-        match s{
-            Ok(ss)=>connect(ss,seed),
-            Err(e)=>{eprintln!("{}",e);},
+    let mut sss: Vec<TcpStream> = Vec::new();
+    let mut adr: Vec<SocketAddr> = Vec::new();
+    let mut players: Vec<entities::Player> = Vec::new();
+    for i in 0..PLAYERS{
+        match listener.accept(){
+            Ok((q,u))=>{sss.push(q);adr.push(u);},
+            Err(_)=>{},
         };
+    }
+    for (i,s) in sss.iter().enumerate(){ // initial data dump
+        connect(s,seed,i as u8);
+        players.push(entities::Player::new());
+    }
+    drop(sss);
+    let mut udps = UdpSocket::bind(a).expect("COULD NOT BIND UDP PORT!!!!!!");
+    let mut posbuf: [u8; 17] = [0; 17];
+    'running: loop {
+        let au:SocketAddr = udps.recv_from(&mut posbuf).expect("packet reception error").1;
+        entities::setposbuf(&posbuf, &mut players);
+        let c = posbuf[0];
+        for (i,pl) in players.iter().enumerate(){
+            let b = i as u8;
+            if b!=c {
+                entities::getposbuf(b,pl,&mut posbuf);
+                //println!("sent {:?} to player {} at {}",&posbuf,b,au);
+                udps.send_to(&posbuf,au);
+            }
+        }
     }
 }
 
-fn connect(mut s: TcpStream, seed:u128){
+fn connect(mut s: &TcpStream, seed: u128, pid: u8){
     println!("{:?}",s);
+    s.write(&[pid,PLAYERS]);
     s.write(&(seed.to_le_bytes()));
 }

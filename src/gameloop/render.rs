@@ -21,7 +21,7 @@ impl GameState<'_, '_> {
 
         match &self.scene {
             Scenes::GamePlay(gdata) => {
-                let pp = gdata.player.pos();
+                let pp = gdata.players[gdata.pid].pos();
 
                 //draw tiles
 
@@ -59,7 +59,7 @@ impl GameState<'_, '_> {
                 //draw player
                 self.canvas.set_draw_color(Color::RGB(255, 0, 0));
 
-                let pdim = gdata.player.dims();
+                let pdim = gdata.players[gdata.pid].dims();
                 let ppt = Point::new((pdim.x * DTILEDIM) as i32, (pdim.y * DTILEDIM) as i32);
                 let xlen = ((pdim.x * 2.0) * DTILEDIM) as u32;
                 let ylen = ((pdim.y * 2.0) * DTILEDIM) as u32;
@@ -68,9 +68,20 @@ impl GameState<'_, '_> {
                 let texture_creator = self.canvas.texture_creator();
                 let mut surf = Surface::new(xlen, ylen, PixelFormatEnum::RGB24).unwrap();
                 let text = texture_creator.create_texture_from_surface(&mut surf).unwrap();
-                match self.canvas.copy_ex(&text, None, Rect::new(topx, topy, xlen, ylen), gdata.player.rot(), ppt, false, false) {
+                match self.canvas.copy_ex(&text, None, Rect::new(topx, topy, xlen, ylen), gdata.players[gdata.pid].rot(), ppt, false, false) {
                     Ok(_f) => {},
                     Err(_e) => {eprintln!("error in rendering player");},
+                }
+
+                //draw other players
+                for (i,pphead) in gdata.players.iter().enumerate(){
+                    if i!=gdata.pid{
+                        let opp = pphead.pos();
+                        let optopx = ((opp.x-pp.x)*DTILEDIM) as i32 + topx;
+                        let optopy = ((opp.y-pp.y)*DTILEDIM) as i32 + topy;
+                        //todo add texture shit
+                        self.canvas.copy_ex(&text, None, Rect::new(optopx, optopy, xlen, ylen), pphead.rot(), ppt, false, false);
+                    }
                 }
                 
             },
