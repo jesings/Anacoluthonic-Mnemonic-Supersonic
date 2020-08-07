@@ -38,7 +38,7 @@ fn globalip(){
 pub fn host(){
     globalip();
     let seed:u128 = rand::random::<u128>();
-    println!("seed: {}",seed);
+    println!("seed: {:X}",seed);
     let a:SocketAddr = match localip(){
         Ok(q)=>SocketAddr::new(q,PORT),
         Err(e)=>{eprintln!("{}",e);return},
@@ -83,7 +83,8 @@ pub fn host(){
 }
 
 fn connect(mut s: &TcpStream, seed: u128, pid: u8){
-    //println!("{:?}",s);
-    s.write(&[pid,PLAYERS]);
-    s.write(&(seed.to_le_bytes()));
+    let mut vectoappend = vec!();
+    vectoappend.extend_from_slice(&[pid,PLAYERS]);
+    vectoappend.extend_from_slice(&seed.to_le_bytes());
+    s.write(vectoappend.as_slice());
 }

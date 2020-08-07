@@ -23,13 +23,14 @@ pub fn gameloop(addr:String) {
     let sip:SocketAddr = SocketAddr::new(addr.parse::<IpAddr>().expect("thats not an ip address holy shit im freaking out"),server::PORT);
     let mut stream = client::connect(sip).expect("could not connect to server");
 
+    let mut pidbuf: [u8; 2]= [0; 2];
     let mut buf: [u8; 16]= [0; 16];
-    stream.read(&mut buf).expect("no pid");
-    let pid:u8 = buf[0];
-    let pln:u8 = buf[1];
+    stream.read(&mut pidbuf).expect("no pid");
+    let pid:u8 = pidbuf[0];
+    let pln:u8 = pidbuf[1];
     stream.read(&mut buf).expect("no seed recieved");
     let seed:u128 = u128::from_le_bytes(buf);
-    println!("pid: {}/{} seed: {} ({:?})",pid,pln,seed,stream);
+    println!("pid: {}/{} seed: {:X} ({:?})",pid,pln,seed,stream);
     let iptst = server::localip().expect("could not get localip");
     let a:SocketAddr =  SocketAddr::new(iptst, if iptst==sip.ip() {server::PORT + 1 + pid as u16} else {server::PORT});
     let mut udps = UdpSocket::bind(a).expect("could not bind udp port!!!");
