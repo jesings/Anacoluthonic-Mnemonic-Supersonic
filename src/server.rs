@@ -1,6 +1,9 @@
 use std::net::{TcpListener,TcpStream,UdpSocket,IpAddr,SocketAddr};
 use std::io::{Read,Write};
 use std::process::Command;
+use std::thread;
+use std::sync::{Arc,Mutex};
+use std::time::Duration;
 use std::convert::TryInto;
 
 #[path = "grid.rs"] mod grid;
@@ -39,10 +42,9 @@ pub fn host(){
     globalip();
     let seed:u128 = rand::random::<u128>();
     println!("seed: {:X}",seed);
-    let a:SocketAddr = match localip(){
-        Ok(q)=>SocketAddr::new(q,PORT),
-        Err(e)=>{eprintln!("{}",e);return},
-    };
+    let ipa = localip().expect("couldnt get local ip");
+    let a:SocketAddr = SocketAddr::new(ipa,PORT);
+    let a2:SocketAddr = SocketAddr::new(ipa,PORT+1);// for multithreading server, seperate sending and recieving
     println!("binding to {}",a);
     let listener:TcpListener = match TcpListener::bind(a){
         Ok(q)=>q,
@@ -65,26 +67,49 @@ pub fn host(){
         players.push(entities::Player::new());
     }
     drop(sss);
-    let mut udps = UdpSocket::bind(a).expect("COULD NOT BIND UDP PORT!!!!!!");
+    let pdata = Arc::new(Mutex::new(players));
+    let mut udps = UdpSocket::bind(a2).expect("COULD NOT BIND UDP PORT!!!!!!");
     let mut posbuf: [u8; 17] = [0; 17];
+    {
+        let pdata = Arc::clone(&pdata);
+        thread::spawn(move || {serverRecieve(pdata,a)});
+    }
     'running: loop {
-        let au:SocketAddr = udps.recv_from(&mut posbuf).expect("packet reception error").1;
-        entities::setposbuf(&posbuf, &mut players);
-        let c = posbuf[0];
-        for (i,pl) in players.iter().enumerate(){
-            let b = i as u8;
-            if b!=c {
-                entities::getposbuf(b,pl,&mut posbuf);
-                //println!("sent {:?} to player {} at {}",&posbuf,b,au);
-                udps.send_to(&posbuf,au);
+        for i in 0..PLAYERS{
+            let b = i as usize;
+            {
+                let pl = pdata.lock().unwrap();
+                entities::getposbuf(i,&pl[b],&mut posbuf);
+            }
+            for j in 0..PLAYERS {
+                if i!=j {
+                    //println!("trying to send to {}, pid {}", adr[j as usize], i);
+                    udps.send_to(&posbuf,adr[j as usize]);
+                }
             }
         }
     }
 }
+
 
 fn connect(mut s: &TcpStream, seed: u128, pid: u8){
     let mut vectoappend = vec!();
     vectoappend.extend_from_slice(&[pid,PLAYERS]);
     vectoappend.extend_from_slice(&seed.to_le_bytes());
     s.write(vectoappend.as_slice());
+}
+
+fn serverRecieve(pdata: Arc<Mutex<Vec<entities::Player>>>, a: SocketAddr){
+    let mut udps = UdpSocket::bind(a).expect("could not bind recieving udp port!!!!!");
+    udps.set_read_timeout(Some(Duration::new(5,0)));
+    let mut posbuf: [u8; 17] = [0; 17];
+    'running: loop {
+        match udps.recv_from(&mut posbuf){
+            Ok(_)=>{},
+            Err(_)=>{break 'running;},
+        };
+        let mut players = pdata.lock().unwrap();
+        entities::setposbuf(&posbuf, &mut *players);
+    }
+    println!("server recieved literally zero data");
 }

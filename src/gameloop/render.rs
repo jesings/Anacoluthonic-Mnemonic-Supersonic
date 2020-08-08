@@ -20,7 +20,8 @@ impl GameState<'_, '_> {
 
 
         match &self.scene {
-            Scenes::GamePlay(gdata) => {
+            Scenes::GamePlay(a) => {
+                let gdata = a.lock().unwrap();
                 let pp = gdata.players[gdata.pid].pos();
 
                 //draw tiles

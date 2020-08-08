@@ -4,17 +4,18 @@ use std::io::{Read,Write};
 use std::collections::HashMap;
 use std::fs::read_dir;
 use std::process::Command;
+use std::sync::{Arc,Mutex};
+use std::thread;
 use sdl2::pixels::Color;
 
 #[path = "grid.rs"] mod grid;
 #[path = "entities.rs"] mod entities;
 #[path = "menu.rs"] mod menu;
-#[path = "client.rs"]mod client;
 #[path = "server.rs"]mod server;
 
+mod client;
 mod gamestate;
 mod render;
-//mod event;
 mod console;
 
 static FRAMERATE: u32 = 60;
@@ -31,11 +32,7 @@ pub fn gameloop(addr:String) {
     stream.read(&mut buf).expect("no seed recieved");
     let seed:u128 = u128::from_le_bytes(buf);
     println!("pid: {}/{} seed: {:X} ({:?})",pid,pln,seed,stream);
-    let iptst = server::localip().expect("could not get localip");
-    let a:SocketAddr =  SocketAddr::new(iptst, if iptst==sip.ip() {server::PORT + 1 + pid as u16} else {server::PORT});
-    let mut udps = UdpSocket::bind(a).expect("could not bind udp port!!!");
-    let mut posbuf: [u8; 17] = [0; 17];
-        
+    let a:SocketAddr =  stream.local_addr().expect("why the frick");
     
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
@@ -88,22 +85,25 @@ pub fn gameloop(addr:String) {
     for _ in 0..pln {
         pls.push(entities::Player::new());
     }
-    let mut gd = gamestate::GameData {
+    let gd = Arc::new(Mutex::new(gamestate::GameData {
         players: pls,
         grid: grid,
         pid: pid as usize,
-    };
-
+        flag: false,
+    }));
     let mut gs = gamestate::GameState{
         canvas: canvas,
         pump: sdl_context.event_pump().unwrap(),
         console: None,
         fonts: font_hash,
         vidsub: video_subsystem,
-        scene: gamestate::Scenes::GamePlay(gd),
+        scene: gamestate::Scenes::GamePlay(Arc::clone(&gd)),
         //scene: gamestate::Scenes::Menu(mainmenu),
     };
-
+    let clienth = thread::spawn(move || {
+        client::clientThread(gd,a,sip);
+    });
+    
     'running: loop {
         let begin = Instant::now();
 
@@ -117,28 +117,10 @@ pub fn gameloop(addr:String) {
             false => break 'running,
         }
 
-        match &mut gs.scene {
-            gamestate::Scenes::GamePlay(q)=>{
-                entities::getposbuf(q.pid as u8, &q.players[q.pid], &mut posbuf);
-                //println!("sent {:?}",&posbuf);
-                udps.send_to(&posbuf,sip);
-                for i in 1..pln{
-                    match udps.recv_from(&mut posbuf){
-                        Ok(_)=>{
-                            //println!("recieved {:?}",&posbuf);
-                            entities::setposbuf(&posbuf, &mut q.players);},
-                        Err(e)=>{eprintln!("{}",e);},
-                    };
-                }
-            },
-            _=>{},
-        };
-        
         match gs.render() {
             Ok(_r) => {},
             Err(e) => eprintln!("{}", e),
         }
-
 
         let delta = begin.elapsed();
 

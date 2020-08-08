@@ -7,6 +7,8 @@ use sdl2::VideoSubsystem;
 use sdl2::event::Event;
 use sdl2::ttf::Font;
 use std::collections::HashMap;
+use std::sync::{Arc,Mutex};
+use std::ops::DerefMut;
 
 use super::grid::Grid;
 use super::entities::{Player, Entity};
@@ -19,6 +21,7 @@ pub struct GameData {
     //&entities????
     pub players: Vec<Player>,
     pub pid: usize, // pos of clients player in player vecotr
+    pub flag: bool, // flag to mark when updates to pass to server :))
 }
 pub struct MenuItems {
     pub name: String,
@@ -28,7 +31,7 @@ pub struct MenuItems {
 }
 pub enum Scenes {
     Menu(MenuItems),
-    GamePlay(GameData),
+    GamePlay(Arc<Mutex<GameData>>),
     //No Clue what to put here
 }
 
@@ -121,7 +124,9 @@ impl GameState<'_, '_> {
         }
 
         match &mut self.scene {
-            Scenes::GamePlay(gdata) => {
+            Scenes::GamePlay(a) => {
+                let mut g = a.lock().unwrap();
+                let mut gdata = g.deref_mut();
                 //let gpv = gdata.player.vel();
                 let rot = gdata.players[gdata.pid].rot();
 
@@ -148,13 +153,15 @@ impl GameState<'_, '_> {
                 //}
 
                 let mut rv: f64 = 0.0;
-                if cw { rv += 3.0; }
-                if ccw { rv -= 3.0; }
+                if cw { rv += 3.0;}
+                if ccw { rv -= 3.0;}
                 gdata.players[gdata.pid].rotate(rv);
 
                 //loop over all entities, for now we just do player
                 //gdata.player.apply_vel(&gdata.grid);
                 //propagate changes to the server as well here
+
+                gdata.flag = true;
             },
             Scenes::Menu(t) => {},
         }

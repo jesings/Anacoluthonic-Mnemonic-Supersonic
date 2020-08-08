@@ -2,7 +2,6 @@ use std::env;
 use std::path::Path;
 
 mod gameloop;
-mod client;
 mod server;
 
 fn main() {
