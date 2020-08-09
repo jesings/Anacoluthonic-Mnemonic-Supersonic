@@ -44,7 +44,7 @@ pub fn host(){
     println!("seed: {:X}",seed);
     let ipa = localip().expect("couldnt get local ip");
     let a:SocketAddr = SocketAddr::new(ipa,PORT);
-    let a2:SocketAddr = SocketAddr::new(ipa,PORT+1);// for multithreading server, seperate sending and recieving
+    //let a2:SocketAddr = SocketAddr::new(ipa,PORT+1);
     println!("binding to {}",a);
     let listener:TcpListener = match TcpListener::bind(a){
         Ok(q)=>q,
@@ -58,7 +58,7 @@ pub fn host(){
             Ok((q,u))=>{
                 //println!("{:?}",q);
                 sss.push(q);
-                adr.push(u);},
+                if u.ip() == ipa {adr.push(u)} else {adr.push(SocketAddr::new(u.ip(),PORT))};},
             Err(_)=>{},
         };
     }
@@ -69,11 +69,12 @@ pub fn host(){
     }
     drop(sss);
     let pdata = Arc::new(Mutex::new(players));
-    let mut udps = UdpSocket::bind(a2).expect("COULD NOT BIND UDP PORT!!!!!!");
+    let mut udps = UdpSocket::bind(a).expect("COULD NOT BIND UDP PORT!!!!!!");
     let mut posbuf: [u8; 17] = [0; 17];
     {
         let pdata = Arc::clone(&pdata);
-        thread::spawn(move || {serverRecieve(pdata,a)});
+        let udps = udps.try_clone().expect("coppuldnt get socket clone");
+        thread::spawn(move || {serverRecieve(pdata,udps)});
     }
     'running: loop {
         for i in 0..PLAYERS{
@@ -103,8 +104,7 @@ fn connect(mut s: &TcpStream, seed: u128, pid: u8){
     s.write(vectoappend.as_slice());
 }
 
-fn serverRecieve(pdata: Arc<Mutex<Vec<entities::Player>>>, a: SocketAddr){
-    let mut udps = UdpSocket::bind(a).expect("could not bind recieving udp port!!!!!");
+fn serverRecieve(pdata: Arc<Mutex<Vec<entities::Player>>>, udps: UdpSocket){
     udps.set_read_timeout(Some(Duration::new(5,0)));
     let mut posbuf: [u8; 17] = [0; 17];
     'running: loop {
