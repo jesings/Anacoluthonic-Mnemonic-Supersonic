@@ -32,7 +32,7 @@ pub fn gameloop(addr:String) {
     stream.read(&mut buf).expect("no seed recieved");
     let seed:u128 = u128::from_le_bytes(buf);
     println!("pid: {}/{} seed: {:X} ({:?})",pid,pln,seed,stream);
-    let a:SocketAddr =  stream.local_addr().expect("why the frick");
+    let a:SocketAddr =  SocketAddr::new(server::localip().expect("couldnotgetlocalip"),stream.local_addr().expect("why the frick").port());
     
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();

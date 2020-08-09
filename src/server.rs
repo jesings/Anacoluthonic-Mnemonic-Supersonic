@@ -62,6 +62,7 @@ pub fn host(){
             Err(_)=>{},
         };
     }
+    println!("{:?}",adr);
     for (i,s) in sss.iter().enumerate(){ // initial data dump
         connect(s,seed,i as u8);
         players.push(entities::Player::new());
@@ -83,8 +84,11 @@ pub fn host(){
             }
             for j in 0..PLAYERS {
                 if i!=j {
-                    //println!("trying to send to {}, pid {}", adr[j as usize], i);
-                    udps.send_to(&posbuf,adr[j as usize]);
+                    println!("trying to send to {}, pid {}", adr[j as usize], i);
+                    match udps.send_to(&posbuf,adr[j as usize]){
+                        Err(e)=>{eprintln!("{}",e);},
+                        _=>{},
+                    };
                 }
             }
         }
