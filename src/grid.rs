@@ -4,6 +4,8 @@ use std::fs::File;
 use std::convert::TryInto;
 use rand_core::RngCore;
 
+static TILEDIM: i32 = 20;
+
 macro_rules! maperror {
     ($x: expr, $y: expr, $($z: expr),*) => {
         eprintln!($y, $($z),*);
@@ -104,6 +106,35 @@ impl Grid{
                 println!();
             }
         }
+    }
+
+    //Force ordering for bresenham, get octant
+
+    pub fn bresen(&self, x_orig: i32, y_orig: i32, x_dest: i32, y_dest: i32, x_subpixel_orig: i32, y_subpixel_orig: i32, x_subpixel_dest: i32, y_subpixel_dest: i32) -> bool{
+        //octant 1, 8 case only
+        let x0 = x_orig * TILEDIM + x_subpixel_orig;
+        let y0 = y_orig * TILEDIM + y_subpixel_orig;
+        let x1 = x_dest * TILEDIM + x_subpixel_dest;
+        let y1 = y_dest * TILEDIM + y_subpixel_dest;
+        let x_subpixels = x1 - x0;
+        let mut y_subpixels = y1 - y0;
+        let yi = if y_subpixels < 0 {y_subpixels = -y_subpixels; -1} else {1};
+        //to handle octant 8
+
+        let mut difference = 2 * y_subpixels - x_subpixels;
+        let mut ynow = y0;
+
+        for x in x0..x1 {
+            //skip logic in here
+            // if impassible return false
+            if difference > 0 {
+                ynow += yi;
+                difference -= 2 * x_subpixels;
+            }
+            difference += 2 * y_subpixels;
+        }
+
+        true
     }
 }
 
