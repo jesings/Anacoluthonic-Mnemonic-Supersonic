@@ -32,8 +32,7 @@ pub fn gameloop(addr:String) {
     stream.read(&mut buf).expect("no seed recieved");
     let seed:u128 = u128::from_le_bytes(buf);
     println!("pid: {}/{} seed: {:X} ({:?})",pid,pln,seed,stream);
-    let iptst = server::localip().expect("could not get localip");
-    let a:SocketAddr =  SocketAddr::new(iptst, if iptst==sip.ip() {stream.local_addr().unwrap().port()} else {server::PORT});
+    let a:SocketAddr =  stream.local_addr().unwrap();
     
     //let a:SocketAddr =  SocketAddr::new(server::localip().expect("couldnotgetlocalip"),stream.local_addr().expect("why the frick").port());
     

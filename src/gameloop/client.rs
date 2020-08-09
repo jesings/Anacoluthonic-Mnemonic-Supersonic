@@ -17,10 +17,10 @@ pub fn clientThread(a: Arc<Mutex<GameData>>, aaa: SocketAddr, sip: SocketAddr){
     let mut udps = UdpSocket::bind(aaa).expect("could not bind udp port!!!");
     udps.set_read_timeout(Some(Duration::new(2,0)));
     'running: loop{
-        println!("waiting for server to send to {}", aaa);
+        //println!("waiting for server to send to {}", aaa);
         match udps.recv_from(&mut posbuf){
             Ok(_)=>{
-                println!("recieved {:?}, waiting for mut",&posbuf);
+                //println!("recieved {:?}, waiting for mut",&posbuf);
                 let mut q=a.lock().unwrap();
                 setposbuf(&posbuf, &mut q.players);
             },

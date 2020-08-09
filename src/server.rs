@@ -58,11 +58,12 @@ pub fn host(){
             Ok((q,u))=>{
                 //println!("{:?}",q);
                 sss.push(q);
-                if u.ip() == ipa {adr.push(u)} else {adr.push(SocketAddr::new(u.ip(),PORT))};},
+                adr.push(u);
+            },
             Err(_)=>{},
         };
     }
-    println!("{:?}",adr);
+    //println!("{:?}",adr);
     for (i,s) in sss.iter().enumerate(){ // initial data dump
         connect(s,seed,i as u8);
         players.push(entities::Player::new());
@@ -85,7 +86,7 @@ pub fn host(){
             }
             for j in 0..PLAYERS {
                 if i!=j {
-                    println!("trying to send to {}, pid {}", adr[j as usize], i);
+                    //println!("trying to send to {}, pid {}", adr[j as usize], i);
                     match udps.send_to(&posbuf,adr[j as usize]){
                         Err(e)=>{eprintln!("{}",e);},
                         _=>{},
