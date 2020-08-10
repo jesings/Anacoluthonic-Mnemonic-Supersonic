@@ -23,9 +23,9 @@ pub fn connect(gd: Arc<Mutex<GameData>>, addr:String) {
     let seed:u128 = u128::from_le_bytes(buf);
     println!("pid: {}/{} seed: {:X} ({:?})",pid,pln,seed,stream);
     let a:SocketAddr =  stream.local_addr().unwrap();
-
     {
         let mut gdata = gd.lock().unwrap();
+        gdata.ingame = true;
         gdata.pid = pid as usize;
         gdata.players.clear();
         for _ in 0..pln {
@@ -36,8 +36,6 @@ pub fn connect(gd: Arc<Mutex<GameData>>, addr:String) {
             Err(_e) => panic!("aaaaaa the random grid didnt get generated???"),
         };
     }
-    
-    
     thread::spawn(move || {
         clientThread(gd,a,sip);
     });
@@ -58,6 +56,9 @@ pub fn clientThread(a: Arc<Mutex<GameData>>, aaa: SocketAddr, sip: SocketAddr){
             Err(e)=>{eprintln!("{}",e);},
         };
         let mut q=a.lock().unwrap();
+        if !q.ingame {
+            break 'running;
+        }
         if q.flag {
             getposbuf(q.pid as u8, &q.players[q.pid], &mut posbuf);
             let udps = udps.try_clone().expect("idk couldnt clone");

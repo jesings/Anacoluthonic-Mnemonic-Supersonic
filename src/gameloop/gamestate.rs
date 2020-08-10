@@ -22,6 +22,7 @@ pub struct GameData {
     pub players: Vec<Player>,
     pub pid: usize, // pos of clients player in player vecotr
     pub flag: bool, // flag to mark when updates to pass to server :))
+    pub ingame: bool,
 }
 pub struct MenuItems {
     pub name: String,
@@ -102,6 +103,7 @@ impl GameState<'_, '_> {
                     }
                 },
                 Event::Quit{..} => {
+                    self.gamedata.lock().unwrap().ingame = false;
                     return false;
                 },
                 _ => {},

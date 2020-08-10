@@ -68,6 +68,7 @@ pub fn gameloop(addr:String) {
         grid: None,
         pid: 0 as usize,
         flag: false,
+        ingame: false,
     }));
     
     let mut gs = gamestate::GameState{
@@ -108,5 +109,4 @@ pub fn gameloop(addr:String) {
 
         std::thread::sleep(Duration::new(0, idle));
     }
-    
 }
