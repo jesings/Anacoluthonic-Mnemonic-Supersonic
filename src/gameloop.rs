@@ -74,10 +74,10 @@ pub fn gameloop(addr:String) {
         Err(_e) => return,
     }
 
-    let mut mainmenu = gamestate::MenuItems {
+    let mainmenu = gamestate::MenuItems {
       name: "Main menu".to_string(),
       buttons: vec!(
-        menu::Button {height: 0.06, width: 0.5, cx: 0.5, cy:  0.7, text: "Start Game".to_string(), font: "Inconsolata".to_string(), textcolor: Color::RGB(255, 255, 255), bgcolor: Color::RGB(20, 60, 100), callback: menu::fdummy},
+        menu::Button {height: 0.06, width: 0.5, cx: 0.5, cy:  0.7, text: "Start Game".to_string(), font: "Inconsolata".to_string(), textcolor: Color::RGB(255, 255, 255), bgcolor: Color::RGB(20, 60, 100), callback: menu::gotogame},
         menu::Button {height: 0.06, width: 0.5, cx: 0.5, cy:  0.77, text: "Settings".to_string(), font: "Inconsolata".to_string(), textcolor: Color::RGB(255, 255, 255), bgcolor: Color::RGB(20, 60, 100), callback: menu::fdummy}
         ),
       sliders: vec!(),
@@ -99,8 +99,8 @@ pub fn gameloop(addr:String) {
         console: None,
         fonts: font_hash,
         vidsub: video_subsystem,
-        scene: gamestate::Scenes::GamePlay(Arc::clone(&gd)),
-        //scene: gamestate::Scenes::Menu(mainmenu),
+        scene: gamestate::Scenes::Menu(mainmenu),
+        gamedata: Arc::clone(&gd),
     };
     let clienth = thread::spawn(move || {
         client::clientThread(gd,a,sip);

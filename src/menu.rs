@@ -21,7 +21,7 @@ pub struct Button {
     pub font: String,
     pub textcolor: Color,
     pub bgcolor: Color,
-    pub callback: fn() -> bool,
+    pub callback: fn(&mut GameState) -> bool,
 }
 
 pub struct Slider {
@@ -36,8 +36,14 @@ pub struct Slider {
     nubdims: f32,
 }
 
-pub fn fdummy() -> bool {
-  println!("Pushed button");
+pub fn gotogame(gs: &mut GameState) -> bool {
+  println!("Pushed start game button");
+  gs.scene = Scenes::GamePlay();
+  true
+}
+
+pub fn fdummy(gs: &mut GameState) -> bool {
+  println!("Pushed dummy button");
   true
 }
 

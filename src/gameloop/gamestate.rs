@@ -31,7 +31,7 @@ pub struct MenuItems {
 }
 pub enum Scenes {
     Menu(MenuItems),
-    GamePlay(Arc<Mutex<GameData>>),
+    GamePlay(),
     //No Clue what to put here
 }
 
@@ -43,6 +43,7 @@ pub struct GameState<'ttf, 'a> {
     //pub entities: &dyn T, where T is Entity
     pub vidsub: VideoSubsystem,
     pub scene: Scenes,
+    pub gamedata: Arc<Mutex<GameData>>,
 }
 
 impl GameState<'_, '_> {
@@ -55,6 +56,7 @@ impl GameState<'_, '_> {
         let mut ccw = false;
 
         let mut text_accuum: String = String::new();
+        let mut bcallbacks = vec!();
         for event in self.pump.poll_iter() {
             match event {
                 Event::TextInput{text, ..} => {
@@ -78,7 +80,7 @@ impl GameState<'_, '_> {
                               let corny = icy - iheight / 2;
                               if (x >= cornx && x <= (cornx + iwidth)) &&
                                  (y >= corny && y <= (corny + iheight)) {
-                                  (button.callback)();
+                                  bcallbacks.push(button.callback);
                               }
 
                           }
@@ -106,6 +108,10 @@ impl GameState<'_, '_> {
             }
         }
 
+        for callback in bcallbacks {
+            (callback)(self);
+        }
+
         match &mut self.console {
             None => {
                 //get what keycodes symbolize, we can use client keyboard settings to do that
@@ -124,8 +130,8 @@ impl GameState<'_, '_> {
         }
 
         match &mut self.scene {
-            Scenes::GamePlay(a) => {
-                let mut g = a.lock().unwrap();
+            Scenes::GamePlay() => {
+                let mut g = self.gamedata.lock().unwrap();
                 let mut gdata = g.deref_mut();
                 //let gpv = gdata.player.vel();
                 let rot = gdata.players[gdata.pid].rot();
