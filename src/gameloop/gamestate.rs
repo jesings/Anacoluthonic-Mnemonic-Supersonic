@@ -17,7 +17,7 @@ use super::menu::{Button, Slider};
 
 static ACCEL: f64 = 1.0 / 64.0;
 pub struct GameData {
-    pub grid: Grid,
+    pub grid: Option<Grid>,
     //&entities????
     pub players: Vec<Player>,
     pub pid: usize, // pos of clients player in player vecotr
@@ -144,7 +144,7 @@ impl GameState<'_, '_> {
                 //}
                 let updown: i8 = if up {-1} else {0} + if down {1} else {0};
                 let leftright: i8 = if left {-1} else {0} + if right {1} else {0};
-                gdata.players[gdata.pid].move_ent(&gdata.grid, leftright, updown);
+                gdata.players[gdata.pid].move_ent(&gdata.grid.as_mut().unwrap(), leftright, updown);
 
 
                 //if down {

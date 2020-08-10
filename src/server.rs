@@ -71,7 +71,7 @@ pub fn host(){
     drop(sss);
     let pdata = Arc::new(Mutex::new(players));
     let mut udps = UdpSocket::bind(a).expect("COULD NOT BIND UDP PORT!!!!!!");
-    let mut posbuf: [u8; 17] = [0; 17];
+    let mut posbuf: [u8; 4096] = [0; 4096];
     {
         let pdata = Arc::clone(&pdata);
         let udps = udps.try_clone().expect("coppuldnt get socket clone");
@@ -106,8 +106,8 @@ fn connect(mut s: &TcpStream, seed: u128, pid: u8){
 }
 
 fn serverRecieve(pdata: Arc<Mutex<Vec<entities::Player>>>, udps: UdpSocket){
-    udps.set_read_timeout(Some(Duration::new(5,0)));
-    let mut posbuf: [u8; 17] = [0; 17];
+    udps.set_read_timeout(Some(Duration::new(20,0)));
+    let mut posbuf: [u8; 4096] = [0; 4096];
     'running: loop {
         match udps.recv_from(&mut posbuf){
             Ok(_)=>{},

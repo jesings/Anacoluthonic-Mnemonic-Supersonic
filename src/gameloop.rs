@@ -21,20 +21,6 @@ mod console;
 static FRAMERATE: u32 = 60;
 
 pub fn gameloop(addr:String) {
-    let sip:SocketAddr = SocketAddr::new(addr.parse::<IpAddr>().expect("thats not an ip address holy shit im freaking out"),server::PORT);
-    let mut stream = client::connect(sip).expect("could not connect to server");
-
-    let mut pidbuf: [u8; 2]= [0; 2];
-    let mut buf: [u8; 16]= [0; 16];
-    stream.read(&mut pidbuf).expect("no pid");
-    let pid:u8 = pidbuf[0];
-    let pln:u8 = pidbuf[1];
-    stream.read(&mut buf).expect("no seed recieved");
-    let seed:u128 = u128::from_le_bytes(buf);
-    println!("pid: {}/{} seed: {:X} ({:?})",pid,pln,seed,stream);
-    let a:SocketAddr =  stream.local_addr().unwrap();
-    
-    //let a:SocketAddr =  SocketAddr::new(server::localip().expect("couldnotgetlocalip"),stream.local_addr().expect("why the frick").port());
     
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
@@ -68,12 +54,6 @@ pub fn gameloop(addr:String) {
         }
     }
 
-    let mut grid: grid::Grid;
-    match grid::Grid::random_grid(400, 400, seed) {
-        Ok(g) => grid = g,
-        Err(_e) => return,
-    }
-
     let mainmenu = gamestate::MenuItems {
       name: "Main menu".to_string(),
       buttons: vec!(
@@ -83,16 +63,13 @@ pub fn gameloop(addr:String) {
       sliders: vec!(),
     };
 
-    let mut pls: Vec<entities::Player> = Vec::new();
-    for _ in 0..pln {
-        pls.push(entities::Player::new());
-    }
     let gd = Arc::new(Mutex::new(gamestate::GameData {
-        players: pls,
-        grid: grid,
-        pid: pid as usize,
+        players: Vec::new(),
+        grid: None,
+        pid: 0 as usize,
         flag: false,
     }));
+    
     let mut gs = gamestate::GameState{
         canvas: canvas,
         pump: sdl_context.event_pump().unwrap(),
@@ -102,9 +79,10 @@ pub fn gameloop(addr:String) {
         scene: gamestate::Scenes::Menu(mainmenu),
         gamedata: Arc::clone(&gd),
     };
-    let clienth = thread::spawn(move || {
-        client::clientThread(gd,a,sip);
-    });
+
+
+    // to be called when connecting from menu
+    client::connect(gd, addr);
     
     'running: loop {
         let begin = Instant::now();
@@ -130,4 +108,5 @@ pub fn gameloop(addr:String) {
 
         std::thread::sleep(Duration::new(0, idle));
     }
+    
 }

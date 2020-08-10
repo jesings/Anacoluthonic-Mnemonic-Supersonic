@@ -37,7 +37,7 @@ impl GameState<'_, '_> {
                     for j in 0..=ytiles {
                         let tile: &Tile;
                         let color: u8;
-                        match gdata.grid.grid_coord((startx + i) as usize, (starty + j) as usize) {
+                        match gdata.grid.as_ref().unwrap().grid_coord((startx + i) as usize, (starty + j) as usize) {
                             None => {
                                 color = 0;
                             },
