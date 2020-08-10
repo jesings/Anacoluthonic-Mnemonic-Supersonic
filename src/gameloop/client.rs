@@ -9,7 +9,7 @@ use super::entities::*;
 use super::server::PORT;
 use super::grid::*;
     
-pub fn connect(gd: Arc<Mutex<GameData>>, addr:String) {
+pub fn connect(gd: Arc<Mutex<GameData>>, addr: &String) {
     let sip:SocketAddr = SocketAddr::new(addr.parse::<IpAddr>().expect("thats not an ip address holy shit im freaking out"),PORT);
     println!("Attempting to connect to {}",sip);
     let mut stream = TcpStream::connect(sip).expect("could not connect to server");

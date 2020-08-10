@@ -78,12 +78,11 @@ pub fn gameloop(addr:String) {
         fonts: font_hash,
         vidsub: video_subsystem,
         scene: gamestate::Scenes::Menu(mainmenu),
+        address: addr,
         gamedata: Arc::clone(&gd),
     };
 
 
-    // to be called when connecting from menu
-    client::connect(gd, addr);
     
     'running: loop {
         let begin = Instant::now();

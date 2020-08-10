@@ -41,10 +41,10 @@ pub struct GameState<'ttf, 'a> {
     pub pump: sdl2::EventPump,
     pub console: Option<Console>,
     pub fonts: HashMap<String, Font<'ttf, 'a>>,
-    //pub entities: &dyn T, where T is Entity
     pub vidsub: VideoSubsystem,
     pub scene: Scenes,
     pub gamedata: Arc<Mutex<GameData>>,
+    pub address: String,
 }
 
 impl GameState<'_, '_> {

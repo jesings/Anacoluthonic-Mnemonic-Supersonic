@@ -4,8 +4,10 @@ use sdl2::ttf::Font;
 use sdl2::render::{WindowCanvas};
 
 use std::collections::HashMap;
+use std::sync::{Arc,Mutex};
 
 use super::gamestate::*;
+use super::client::connect;
 
 pub trait MenuRender {
     fn render(&self, canv: &mut WindowCanvas, fontmap: &mut HashMap<String, Font>, xdim: i32, ydim: i32) -> bool;
@@ -39,6 +41,8 @@ pub struct Slider {
 pub fn gotogame(gs: &mut GameState) -> bool {
   println!("Pushed start game button");
   gs.scene = Scenes::GamePlay();
+    // to be called when connecting from menu
+  connect(Arc::clone(&gs.gamedata), &gs.address);
   true
 }
 
