@@ -31,7 +31,7 @@ pub fn connect(gd: Arc<Mutex<GameData>>, addr:String) {
         for _ in 0..pln {
             gdata.players.push(Player::new());
         }
-        let grid = match Grid::random_grid(400, 400, seed) {
+        gdata.grid = match Grid::random_grid(400, 400, seed) {
             Ok(g) => Some(g),
             Err(_e) => panic!("aaaaaa the random grid didnt get generated???"),
         };
