@@ -43,7 +43,7 @@ impl GameState<'_, '_> {
                             },
                             Some(t) => {
                                 tile = t;
-                                color = t.texture;
+                                color = tile.texture;
                             },
                         }
                         self.canvas.set_draw_color(Color::RGB(color, color, color));
@@ -81,7 +81,7 @@ impl GameState<'_, '_> {
                         let optopx = ((opp.x-pp.x)*DTILEDIM) as i32 + topx;
                         let optopy = ((opp.y-pp.y)*DTILEDIM) as i32 + topy;
                         //todo add texture shit
-                        self.canvas.copy_ex(&text, None, Rect::new(optopx, optopy, xlen, ylen), pphead.rot(), ppt, false, false);
+                        self.canvas.copy_ex(&text, None, Rect::new(optopx, optopy, xlen, ylen), pphead.rot(), ppt, false, false).expect("Cannot render because has no spatial awareness like benson");
                     }
                 }
                 

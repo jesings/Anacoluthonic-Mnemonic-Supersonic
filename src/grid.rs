@@ -127,6 +127,14 @@ impl Grid{
         for x in x0..x1 {
             //skip logic in here
             // if impassible return false
+            match self.grid_coord((x / TILEDIM) as usize, (ynow / TILEDIM) as usize) {
+                Some(tile) => {
+                    if !tile.passable {
+                        return false;
+                    }
+                },
+                None => {},
+            }
             if difference > 0 {
                 ynow += yi;
                 difference -= 2 * x_subpixels;

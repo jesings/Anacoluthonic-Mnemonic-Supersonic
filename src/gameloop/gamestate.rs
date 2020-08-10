@@ -1,7 +1,7 @@
 use sdl2::render::{WindowCanvas};
-use sdl2::pixels::Color;
+//use sdl2::pixels::Color;
 use sdl2::keyboard::Scancode;
-use sdl2::keyboard::KeyboardState;
+//use sdl2::keyboard::KeyboardState;
 use sdl2::mouse::*;
 use sdl2::VideoSubsystem;
 use sdl2::event::Event;
@@ -136,7 +136,7 @@ impl GameState<'_, '_> {
                 let mut g = self.gamedata.lock().unwrap();
                 let mut gdata = g.deref_mut();
                 //let gpv = gdata.player.vel();
-                let rot = gdata.players[gdata.pid].rot();
+                //let rot = gdata.players[gdata.pid].rot();
 
                 //if up {
                 //    let ddxdt: f64 = rot.to_radians().cos() * ACCEL;
@@ -171,7 +171,7 @@ impl GameState<'_, '_> {
 
                 gdata.flag = true;
             },
-            Scenes::Menu(t) => {},
+            Scenes::Menu(_t) => {},
         }
         true
     }

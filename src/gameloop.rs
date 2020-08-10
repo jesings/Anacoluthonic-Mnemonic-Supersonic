@@ -1,10 +1,10 @@
-use std::net::{IpAddr,SocketAddr};
+//use std::net::{IpAddr,SocketAddr};
 use std::time::{Duration, Instant};
-use std::io::{Read};
+//use std::io::{Read};
 use std::collections::HashMap;
 use std::fs::read_dir;
 use std::sync::{Arc,Mutex};
-use std::thread;
+//use std::thread;
 use sdl2::pixels::Color;
 
 #[path = "grid.rs"] mod grid;
@@ -31,7 +31,7 @@ pub fn gameloop(addr:String) {
         .build()
         .unwrap();
 
-    let mut canvas = window.into_canvas().build().unwrap();
+    let canvas = window.into_canvas().build().unwrap();
 
     let ttf_context = sdl2::ttf::init().unwrap();
 

@@ -1,5 +1,5 @@
 use std::net::{TcpStream,UdpSocket,SocketAddr,IpAddr};
-use std::io::{Error,Read};
+use std::io::{Read};
 use std::sync::{Mutex,Arc};
 use std::thread;
 use std::time::Duration;
@@ -37,14 +37,14 @@ pub fn connect(gd: Arc<Mutex<GameData>>, addr: &String) {
         };
     }
     thread::spawn(move || {
-        clientThread(gd,a,sip);
+        client_thread(gd,a,sip);
     });
 }
 
-pub fn clientThread(a: Arc<Mutex<GameData>>, aaa: SocketAddr, sip: SocketAddr){
+pub fn client_thread(a: Arc<Mutex<GameData>>, aaa: SocketAddr, sip: SocketAddr){
     let mut posbuf: [u8; 17] = [0; 17];
-    let mut udps = UdpSocket::bind(aaa).expect("could not bind udp port!!!");
-    udps.set_read_timeout(Some(Duration::new(2,0)));
+    let udps = UdpSocket::bind(aaa).expect("could not bind udp port!!!");
+    udps.set_read_timeout(Some(Duration::new(20,0))).expect("Cannot go into timeout, no dessert for a week young lady");
     'running: loop{
         //println!("waiting for server to send to {}", aaa);
         match udps.recv_from(&mut posbuf){
@@ -62,7 +62,7 @@ pub fn clientThread(a: Arc<Mutex<GameData>>, aaa: SocketAddr, sip: SocketAddr){
         if q.flag {
             getposbuf(q.pid as u8, &q.players[q.pid], &mut posbuf);
             let udps = udps.try_clone().expect("idk couldnt clone");
-            thread::spawn(move || {udps.send_to(&posbuf,sip);});
+            thread::spawn(move || {udps.send_to(&posbuf,sip).expect("Cannot send to server because dingus");});
             q.flag = false;
         }
     }

@@ -31,7 +31,7 @@ impl Skill {
         if self.offcd(now) {0.0} else {(self.up.as_millis() - now.as_millis())as f32 / self.cd.as_millis()as f32}
     }
     pub fn useskill(&mut self, gdata: &mut GameData, pos: Position, now: Duration) -> bool {
-        if (self.offcd(now)){
+        if self.offcd(now) {
             self.setcd(now);
             return (self.skill)(gdata, pos)
         }

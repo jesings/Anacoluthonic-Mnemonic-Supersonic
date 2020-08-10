@@ -1,7 +1,7 @@
 use sdl2::rect::Rect;
 use sdl2::render::WindowCanvas;
-use sdl2::pixels::Color;
-use sdl2::ttf::Font;
+//use sdl2::pixels::Color;
+//use sdl2::ttf::Font;
 use super::gamestate::*;
 use sdl2::pixels::PixelFormatEnum;
 use sdl2::surface::Surface;
@@ -18,8 +18,8 @@ impl GameState<'_, '_> {
 }
 
 pub struct Console {
-    hist: Vec<String>,
-    outp: Vec<String>,
+    _hist: Vec<String>,
+    _outp: Vec<String>,
     pub inp: String,
     //size and font??
 }
@@ -27,8 +27,8 @@ pub struct Console {
 impl Console {
     pub fn new() -> Console {
         Console {
-            hist: vec!(),
-            outp: vec!(),
+            _hist: vec!(),
+            _outp: vec!(),
             inp: String::new(),
         }
     }
@@ -42,8 +42,8 @@ impl Console {
         }
         true
     }
-    pub fn update_console(&self) -> bool {
-        
-        true
-    }
+    //pub fn update_console(&self) -> bool {
+    //    
+    //    true
+    //}
 }

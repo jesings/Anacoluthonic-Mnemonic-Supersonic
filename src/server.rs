@@ -1,10 +1,9 @@
 use std::net::{TcpListener,TcpStream,UdpSocket,IpAddr,SocketAddr};
-use std::io::{Read,Write};
+use std::io::{Write};
 use std::process::Command;
 use std::thread;
 use std::sync::{Arc,Mutex};
 use std::time::Duration;
-use std::convert::TryInto;
 
 #[path = "grid.rs"] mod grid;
 #[path = "entities.rs"] mod entities;
@@ -53,7 +52,7 @@ pub fn host(){
     let mut sss: Vec<TcpStream> = Vec::new();
     let mut adr: Vec<SocketAddr> = Vec::new();
     let mut players: Vec<entities::Player> = Vec::new();
-    for i in 0..PLAYERS{
+    for _i in 0..PLAYERS{
         match listener.accept(){
             Ok((q,u))=>{
                 //println!("{:?}",q);
@@ -70,13 +69,14 @@ pub fn host(){
     }
     drop(sss);
     let pdata = Arc::new(Mutex::new(players));
-    let mut udps = UdpSocket::bind(a).expect("COULD NOT BIND UDP PORT!!!!!!");
+    let udps = UdpSocket::bind(a).expect("COULD NOT BIND UDP PORT!!!!!!");
     let mut posbuf: [u8; 4096] = [0; 4096];
     {
         let pdata = Arc::clone(&pdata);
         let udps = udps.try_clone().expect("coppuldnt get socket clone");
-        thread::spawn(move || {serverRecieve(pdata,udps)});
+        thread::spawn(move || {server_recieve(pdata,udps)});
     }
+    #[allow(unused_labels)]
     'running: loop {
         for i in 0..PLAYERS{
             let b = i as usize;
@@ -102,11 +102,11 @@ fn connect(mut s: &TcpStream, seed: u128, pid: u8){
     let mut vectoappend = vec!();
     vectoappend.extend_from_slice(&[pid,PLAYERS]);
     vectoappend.extend_from_slice(&seed.to_le_bytes());
-    s.write(vectoappend.as_slice());
+    s.write(vectoappend.as_slice()).expect("Cannot write to clients, I need to go back to pre-k");
 }
 
-fn serverRecieve(pdata: Arc<Mutex<Vec<entities::Player>>>, udps: UdpSocket){
-    udps.set_read_timeout(Some(Duration::new(20,0)));
+fn server_recieve(pdata: Arc<Mutex<Vec<entities::Player>>>, udps: UdpSocket){
+    udps.set_read_timeout(Some(Duration::new(20,0))).expect("Cannot go into timeout, no dessert for you young man");
     let mut posbuf: [u8; 4096] = [0; 4096];
     'running: loop {
         match udps.recv_from(&mut posbuf){

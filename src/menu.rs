@@ -4,7 +4,7 @@ use sdl2::ttf::Font;
 use sdl2::render::{WindowCanvas};
 
 use std::collections::HashMap;
-use std::sync::{Arc,Mutex};
+use std::sync::{Arc};
 
 use super::gamestate::*;
 use super::client::connect;
@@ -32,7 +32,6 @@ pub struct Slider {
     cy: f32,
     //nubtexture
     //linetexture
-    nubheight: f32,
     lineheight: f32,
     nubpos: f32,
     nubdims: f32,
@@ -46,7 +45,7 @@ pub fn gotogame(gs: &mut GameState) -> bool {
   true
 }
 
-pub fn fdummy(gs: &mut GameState) -> bool {
+pub fn fdummy(_gs: &mut GameState) -> bool {
   println!("Pushed dummy button");
   true
 }
@@ -103,7 +102,7 @@ impl MenuRender for Button {
     }
 }
 impl MenuRender for Slider {
-    fn render(&self, canv: &mut WindowCanvas, fontmap: &mut HashMap<String, Font>, xdim: i32, ydim: i32) -> bool {
+    fn render(&self, canv: &mut WindowCanvas, _fontmap: &mut HashMap<String, Font>, xdim: i32, ydim: i32) -> bool {
         let iwidth = (self.width * xdim as f32) as i32;
         let iheight = (self.lineheight * ydim as f32) as i32;
         let icx = (self.cx * xdim as f32) as i32;
