@@ -32,7 +32,6 @@ impl Class {
             gs.scene = Scenes::GamePlay(GameplayScene::None);
             if n < gs.class.as_ref().unwrap().skills.len() {
                 let mut gd = gs.gamedata.lock().unwrap();
-                println!("ok so rn this is just using the coords of where you click with the mouse for this jonathicc u need to actually convert into rrelative cooords pls :)))){} {}",x,y);
                 return gs.class.as_mut().unwrap().skills[n].useskill(&mut gd, Position {x: x, y: y}, now)
             }
             false

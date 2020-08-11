@@ -85,7 +85,7 @@ pub fn gameloop(addr:String) {
         scene: gamestate::Scenes::Menu(mainmenu),
         class: Some(class::Class::new(0)), // class picker menu eventually
         huditems: vec!(
-            hud::HudItem{dims: 50, cx: 0.04, cy: 0.95, bgcolor: Color::RGBA(200, 60, 100, 200)},
+            hud::HudItem{height: 120, width: 80, xpadding: 10, ypadding: -10, bgcolor: Color::RGBA(200, 60, 100, 200)},
         ),
         address: addr,
         gamedata: Arc::clone(&gd),
