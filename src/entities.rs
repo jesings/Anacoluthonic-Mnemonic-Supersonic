@@ -83,16 +83,18 @@ pub trait Entity {
     }
     fn move_ent(&mut self, gr: &Grid, lr: i8, ud: i8) -> bool {
         let mut mp = self.mut_pos();
-        let dirvel = 0.5 * if lr == 0 && ud == 0 {1.0} else {0.7071067811865475};
+        let dirvel = 0.5 * if lr == 0 || ud == 0 {1.0} else {0.7071067811865475};
         mp.x += lr as f64 * dirvel;
         mp.y += ud as f64 * dirvel;
-        match gr.grid_coord(mp.x.floor() as usize, mp.y.floor() as usize) {
-            Some(t) => {
-                if t.passable {
-                    return true;
-                }
-            },
-            None => {},
+        if mp.x >= 0.0 && mp.y >= 0.0 {
+            match gr.grid_coord(mp.x.floor() as usize, mp.y.floor() as usize) {
+                Some(t) => {
+                    if t.passable {
+                        return true;
+                    }
+                },
+                None => {},
+            }
         }
         mp.x -= lr as f64 * dirvel;
         mp.y -= ud as f64 * dirvel;
