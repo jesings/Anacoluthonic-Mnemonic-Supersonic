@@ -52,7 +52,7 @@ pub fn client_thread(a: Arc<Mutex<GameData>>, aaa: SocketAddr, sip: SocketAddr){
                 //println!("recieved {:?}, waiting for mut",&buf);
                 packet_decode(&buf, Arc::clone(&a));
             },
-            Err(e)=>{/*eprintln!("{}",e);*/},
+            Err(_e)=>{/*eprintln!("{}",e);*/},
         };
         let mut q = a.lock().unwrap();
         if !q.ingame {
