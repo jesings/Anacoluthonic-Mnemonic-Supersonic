@@ -9,13 +9,15 @@ use sdl2::ttf::Font;
 use std::collections::HashMap;
 use std::sync::{Arc,Mutex};
 use std::ops::DerefMut;
+use std::time::Duration;
 
 use super::grid::Grid;
-use super::entities::{Player, Entity};
+use super::entities::{Player, Entity, Position};
 use super::console::*;
 use super::menu::{Button, Slider};
 use super::hud::HudItem;
 use super::packet::*;
+use super::class::Class;
 
 static ACCEL: f64 = 1.0 / 64.0;
 pub struct GameData {
@@ -33,9 +35,18 @@ pub struct MenuItems {
     pub sliders: Vec<Slider>,
     //??? the above need function callbacks, not sure about click and drag for sliders
 }
+
+pub enum GameplayScene { // context for opening menus, targeting skills or items, etc.
+    None,
+    Inventory,
+    Skill(usize),
+    Item(usize),
+    Entity(usize),
+}
+
 pub enum Scenes {
     Menu(MenuItems),
-    GamePlay(),
+    GamePlay(GameplayScene),
     //No Clue what to put here
 }
 
@@ -47,12 +58,18 @@ pub struct GameState<'ttf, 'a> {
     pub vidsub: VideoSubsystem,
     pub scene: Scenes,
     pub huditems: Vec<HudItem>,
+    pub class: Option<Class>,
     pub gamedata: Arc<Mutex<GameData>>,
     pub address: String,
 }
 
+pub enum Callback {
+    B(fn(&mut GameState) -> bool),
+    S(fn(&mut GameState) -> bool),
+}
+
 impl GameState<'_, '_> {
-    pub fn update(&mut self) -> bool {
+    pub fn update(&mut self, now: Duration) -> bool {
         let mut left = false;
         let mut down = false;
         let mut right  = false;
@@ -62,41 +79,59 @@ impl GameState<'_, '_> {
 
         let mut text_accuum: String = String::new();
         let mut bcallbacks = vec!();
+        let mut scallbacks = vec!();
+        let mut ucallbacks = vec!();
         for event in self.pump.poll_iter() {
             match event {
                 Event::TextInput{text, ..} => {
                     text_accuum = text;
                 },
                 Event::MouseButtonDown{x, y, mouse_btn, ..} => {
-                  let dims = match self.canvas.output_size() {
-                    Ok(f) => f,
-                    Err(_e) => (0, 0),
-                  };
-                  match mouse_btn {
-                    MouseButton::Left => {
-                      match &self.scene {
-                        Scenes::Menu(m) => {
-                          for button in &m.buttons {
-                              let iwidth = (button.width * dims.0 as f32) as i32;
-                              let iheight = (button.height * dims.1 as f32) as i32;
-                              let icx = (button.cx * dims.0 as f32) as i32;
-                              let icy = (button.cy * dims.1 as f32) as i32;
-                              let cornx = icx - iwidth / 2;
-                              let corny = icy - iheight / 2;
-                              if (x >= cornx && x <= (cornx + iwidth)) &&
-                                 (y >= corny && y <= (corny + iheight)) {
-                                  bcallbacks.push(button.callback);
-                              }
+                    let dims = match self.canvas.output_size() {
+                        Ok(f) => f,
+                        Err(_e) => (0, 0),
+                    };
+                    match mouse_btn {
+                        MouseButton::Left => {
+                            match &self.scene {
+                                Scenes::Menu(m) => {
+                                    for button in &m.buttons {
+                                        let iwidth = (button.width * dims.0 as f32) as i32;
+                                        let iheight = (button.height * dims.1 as f32) as i32;
+                                        let icx = (button.cx * dims.0 as f32) as i32;
+                                        let icy = (button.cy * dims.1 as f32) as i32;
+                                        let cornx = icx - iwidth / 2;
+                                        let corny = icy - iheight / 2;
+                                        if (x >= cornx && x <= (cornx + iwidth)) &&
+                                            (y >= corny && y <= (corny + iheight)) {
+                                                bcallbacks.push(button.callback);
+                                            }
 
-                          }
+                                    }
+                                },
+                                Scenes::GamePlay(c) => {
+                                    match &c {
+                                        GameplayScene::Skill(_) => {
+                                            ucallbacks.push(Class::use_handle(x, y, now));
+                                        },
+                                        _ => {},
+                                    }
+                                },
+                                //_ => {}
+                            }
                         },
-                        _ => {}
-                      }
-                    },
-                    _ => {},
-                  }
+                        MouseButton::Right => {
+                            match &self.scene {
+                                Scenes::GamePlay(_) => {
+                                    scallbacks.push(GameState::change_gameplayscene(GameplayScene::None));
+                                },
+                                _ => {},
+                            }
+                        }
+                        _ => {},
+                    }
                 },
-                Event::KeyDown{scancode, ..} => {
+                Event::KeyDown{scancode, ..} => { 
                     if scancode == Some(Scancode::Grave) {
                         if self.console.is_some() {
                             self.disable_console();
@@ -104,6 +139,17 @@ impl GameState<'_, '_> {
                             self.enable_console();
                         }
                         break;
+                    }
+                    match &self.scene {
+                        Scenes::GamePlay(_) => {
+                            match scancode { Some(code) => { match code {
+                                Scancode::Num1 => {
+                                    scallbacks.push(GameState::change_gameplayscene(GameplayScene::Skill(0)));
+                                },
+                                _ => {},
+                            }}, _ => {},}
+                        },
+                        _ => {},
                     }
                 },
                 Event::Quit{..} => {
@@ -114,10 +160,16 @@ impl GameState<'_, '_> {
             }
         }
 
-        for callback in bcallbacks {
+        for callback in bcallbacks { // almost, but not quite, all the same type :(( maybe use an enum? but weird types not sure if worth
             (callback)(self);
         }
-
+        for callback in scallbacks {
+            (callback)(self);
+        }
+        for callback in ucallbacks {
+            (callback)(self);
+        }
+        
         match &mut self.console {
             None => {
                 //get what keycodes symbolize, we can use client keyboard settings to do that
@@ -136,7 +188,7 @@ impl GameState<'_, '_> {
         }
 
         match &mut self.scene {
-            Scenes::GamePlay() => {
+            Scenes::GamePlay(_) => {
                 let mut g = self.gamedata.lock().unwrap();
                 let mut gdata = g.deref_mut();
                 //let gpv = gdata.player.vel();
@@ -177,6 +229,24 @@ impl GameState<'_, '_> {
             Scenes::Menu(_t) => {},
         }
         true
+    }
+    fn change_gameplayscene(e: GameplayScene) -> impl Fn(&mut GameState) -> bool {
+        move |gs: &mut GameState| -> bool {
+            match e {
+                GameplayScene::Skill(n) => {
+                    if gs.class.as_ref().unwrap().skills.len() > n {
+                        gs.scene = Scenes::GamePlay(GameplayScene::Skill(n));
+                    }
+                    return true
+                },
+                GameplayScene::None => {
+                    gs.scene = Scenes::GamePlay(GameplayScene::None)
+                }
+                _ => {},
+            }
+            true
+        }
+        
     }
 }
 

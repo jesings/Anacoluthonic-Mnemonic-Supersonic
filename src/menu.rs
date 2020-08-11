@@ -39,7 +39,7 @@ pub struct Slider {
 
 pub fn gotogame(gs: &mut GameState) -> bool {
   println!("Pushed start game button");
-  gs.scene = Scenes::GamePlay();
+  gs.scene = Scenes::GamePlay(GameplayScene::None);
     // to be called when connecting from menu
   connect(Arc::clone(&gs.gamedata), &gs.address);
   true

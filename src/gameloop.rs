@@ -15,6 +15,7 @@ use sdl2::pixels::Color;
 #[path = "skill.rs"] pub mod skill;
 #[path = "client.rs"] mod client;
 #[path = "packet.rs"] pub mod packet;
+#[path = "class.rs"] mod class;
 
 pub mod gamestate;
 mod render;
@@ -82,6 +83,7 @@ pub fn gameloop(addr:String) {
         fonts: font_hash,
         vidsub: video_subsystem,
         scene: gamestate::Scenes::Menu(mainmenu),
+        class: Some(class::Class::new(0)), // class picker menu eventually
         huditems: vec!(
             hud::HudItem{dims: 50, cx: 0.04, cy: 0.95, bgcolor: Color::RGBA(200, 60, 100, 200)},
         ),
@@ -90,7 +92,7 @@ pub fn gameloop(addr:String) {
     };
 
 
-    
+    let mut now: Duration = Duration::new(0,0);
     'running: loop {
         let begin = Instant::now();
 
@@ -99,7 +101,7 @@ pub fn gameloop(addr:String) {
         //    true => {},
         //}
 
-        match gs.update() {
+        match gs.update(now) {
             true => {},
             false => break 'running,
         }
@@ -111,8 +113,8 @@ pub fn gameloop(addr:String) {
 
         let delta = begin.elapsed();
 
-        let idle = 1_000_000_000u32 / FRAMERATE - delta.as_millis() as u32;
-
-        std::thread::sleep(Duration::new(0, idle));
+        let idle = Duration::new(0, 1_000_000_000u32 / FRAMERATE - delta.as_millis() as u32);
+        now += idle;
+        std::thread::sleep(idle);
     }
 }
