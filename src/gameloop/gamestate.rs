@@ -149,7 +149,7 @@ impl GameState<'_, '_> {
                 let updown: i8 = if up {-1} else {0} + if down {1} else {0};
                 let leftright: i8 = if left {-1} else {0} + if right {1} else {0};
                 gdata.players[gdata.pid].move_ent(&gdata.grid.as_mut().unwrap(), leftright, updown);
-                gdata.bufpos += encode_player_pos(&mut gdata.buf, gdata.bufpos, gdata.pid as u8, 4, &gdata.players[gdata.pid].pos());
+                gdata.bufpos += encode_player(&mut gdata.buf, gdata.bufpos, gdata.pid as u8, 4, PacketVal::Pos(gdata.players[gdata.pid].pos()));
                 
                 //if down {
                 //    let dir = gpv.y.atan2(gpv.x);
