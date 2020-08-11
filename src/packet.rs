@@ -5,6 +5,12 @@ use crate::gameloop::gamestate::GameData;
 use crate::gameloop::entities::*;
 use crate::gameloop::grid::Tile;
 
+pub enum PacketVal { // buff i etc. etc.
+    Pos(Position),
+    Float64(f64),
+    Float32(f32),
+}
+
 pub fn packet_decode(buf: &[u8], gdata: Arc<Mutex<GameData>>) -> usize {
     let mut i: usize = 1; // zero index is pid for server propagation
     while i<buf.len() {
@@ -78,20 +84,60 @@ pub fn packet_decode(buf: &[u8], gdata: Arc<Mutex<GameData>>) -> usize {
     i
 }
 
-pub fn encode_player_pos(buf: &mut [u8], i: usize, pid: u8, feild: u8, val: &Position) -> usize {
+pub fn encode_player(buf: &mut [u8], i: usize, pid: u8, feild: u8, val: PacketVal) -> usize {
     // 2 pid feild v a l
-    match feild {
-        2 | 4 | 5 => {
-            // velocity | position | dimensions
-            buf[i] = 2;
-            buf[i+1] = pid; // todo bad pid values crash server
-            buf[i+2] = feild;
-            postobuf(val, &mut buf[i+3..i+19]);
-            return 19;
+    match val {
+        PacketVal::Pos(n) => {            
+            match feild {
+                2 | 4 | 5 => {
+                    // velocity | position | dimensions
+                    buf[i] = 2;
+                    buf[i+1] = pid; // todo bad pid values crash server
+                    buf[i+2] = feild;
+                    postobuf(n, &mut buf[i+3..i+19]);
+                    return 19
+                },
+                _ => {
+                    panic!("bad feild for position")
+                },
+
+            }
+        },
+        PacketVal::Float32(n) => {
+            match feild {
+                0 | 1  => {
+                    // health | maxhealth
+                    buf[i] = 2;
+                    buf[i+1] = pid;
+                    buf[i+2] = feild;
+                    f32tobuf(n, &mut buf[i+3..i+7]);
+                    return 7
+                },
+                _ => {
+                    panic!("bad feild for f32")
+                },
+
+            }
+        },
+        PacketVal::Float64(n) => {
+            match feild {
+                3 | 6  => {
+                    // maxvelocity | rot
+                    buf[i] = 2;
+                    buf[i+1] = pid;
+                    buf[i+2] = feild;
+                    f64tobuf(n, &mut buf[i+3..i+11]);
+                    return 11
+                },
+                _ => {
+                    panic!("bad feild for f64")
+                },
+
+            }
         },
         _ => {
-            panic!("bad feild for position")
-        },
+            panic!("bad value")
+        }
     }
 }
 
@@ -126,7 +172,7 @@ fn buftopos(posbuf: &[u8]) -> Position {
         y: buftof64(&posbuf[8..16]),
     }
 }
-fn postobuf(pos: &Position, posbuf: &mut [u8]) {
+fn postobuf(pos: Position, posbuf: &mut [u8]) {
     for (i,e) in pos.x.to_le_bytes().iter().zip(pos.y.to_le_bytes().iter()).enumerate(){
         posbuf[i] = *e.0;
         posbuf[i+8] = *e.1;
