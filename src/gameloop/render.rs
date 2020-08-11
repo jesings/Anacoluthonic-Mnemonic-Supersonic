@@ -84,6 +84,10 @@ impl GameState<'_, '_> {
                         self.canvas.copy_ex(&text, None, Rect::new(optopx, optopy, xlen, ylen), pphead.rot(), ppt, false, false).expect("Cannot render because has no spatial awareness like benson");
                     }
                 }
+
+                for huditem in &self.huditems {
+                    huditem.render(&mut self.canvas, dims.0 as i32, dims.1 as i32);
+                }
                 
             },
             Scenes::Menu(m) => {
