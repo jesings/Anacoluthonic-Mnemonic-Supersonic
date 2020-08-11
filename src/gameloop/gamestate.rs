@@ -14,6 +14,7 @@ use super::grid::Grid;
 use super::entities::{Player, Entity};
 use super::console::*;
 use super::menu::{Button, Slider};
+use super::packet::*;
 
 static ACCEL: f64 = 1.0 / 64.0;
 pub struct GameData {
@@ -21,8 +22,9 @@ pub struct GameData {
     //&entities????
     pub players: Vec<Player>,
     pub pid: usize, // pos of clients player in player vecotr
-    pub flag: bool, // flag to mark when updates to pass to server :))
-    pub ingame: bool,
+    pub buf: [u8; 4096], // should be periodically updated with changes to gamestate encoded as packets
+    pub bufpos: usize, // position of next write into buf
+    pub ingame: bool, // marks eol 4 threds
 }
 pub struct MenuItems {
     pub name: String,
@@ -147,8 +149,8 @@ impl GameState<'_, '_> {
                 let updown: i8 = if up {-1} else {0} + if down {1} else {0};
                 let leftright: i8 = if left {-1} else {0} + if right {1} else {0};
                 gdata.players[gdata.pid].move_ent(&gdata.grid.as_mut().unwrap(), leftright, updown);
-
-
+                gdata.bufpos += encode_player_pos(&mut gdata.buf, gdata.bufpos, gdata.pid as u8, 4, &gdata.players[gdata.pid].pos());
+                
                 //if down {
                 //    let dir = gpv.y.atan2(gpv.x);
                 //    let mut ddxdt: f64 = -dir.cos() * 1.5 * ACCEL;
@@ -169,7 +171,6 @@ impl GameState<'_, '_> {
                 //gdata.player.apply_vel(&gdata.grid);
                 //propagate changes to the server as well here
 
-                gdata.flag = true;
             },
             Scenes::Menu(_t) => {},
         }

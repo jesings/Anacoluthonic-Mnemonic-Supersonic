@@ -90,6 +90,13 @@ impl Grid{
             Some(&self.tiles[r * self.cols + c])
         }
     }
+    pub fn mut_grid_coord(&mut self, r: usize, c: usize) -> Option<&mut Tile>{
+        if r >= self.rows || c >= self.cols {
+            None
+        } else {
+            Some(&mut self.tiles[r * self.cols + c])
+        }
+    }
 
     pub fn print_grid(&self){
         let mut rowpos = 0;

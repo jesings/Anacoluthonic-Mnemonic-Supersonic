@@ -7,14 +7,15 @@ use std::sync::{Arc,Mutex};
 //use std::thread;
 use sdl2::pixels::Color;
 
-#[path = "grid.rs"] mod grid;
-#[path = "entities.rs"] mod entities;
+#[path = "grid.rs"] pub mod grid;
+#[path = "entities.rs"] pub mod entities;
 #[path = "menu.rs"] mod menu;
-#[path = "server.rs"]mod server;
-#[path = "skill.rs"]pub mod skill;
+#[path = "server.rs"] pub mod server;
+#[path = "skill.rs"] pub mod skill;
+#[path = "client.rs"] mod client;
+#[path = "packet.rs"] pub mod packet;
 
-mod client;
-mod gamestate;
+pub mod gamestate;
 mod render;
 mod console;
 
@@ -66,8 +67,9 @@ pub fn gameloop(addr:String) {
     let gd = Arc::new(Mutex::new(gamestate::GameData {
         players: Vec::new(),
         grid: None,
-        pid: 0 as usize,
-        flag: false,
+        pid: 0,
+        buf: [0; 4096],
+        bufpos: 1,
         ingame: false,
     }));
     

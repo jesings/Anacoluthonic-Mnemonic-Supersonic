@@ -1,12 +1,14 @@
 use std::net::{TcpListener,TcpStream,UdpSocket,IpAddr,SocketAddr};
 use std::io::{Write};
 use std::process::Command;
-use std::thread;
+//use std::thread;
 use std::sync::{Arc,Mutex};
 use std::time::Duration;
 
-#[path = "grid.rs"] mod grid;
-#[path = "entities.rs"] mod entities;
+use crate::gameloop::grid::*;
+use crate::gameloop::entities::*;
+use crate::gameloop::packet::*;
+use crate::gameloop::gamestate::*;
 
 static PLAYERS:u8 = 2; // should be configurable at server creation later
 pub static PORT:u16 = 54952;
@@ -51,7 +53,7 @@ pub fn host(){
     };
     let mut sss: Vec<TcpStream> = Vec::new();
     let mut adr: Vec<SocketAddr> = Vec::new();
-    let mut players: Vec<entities::Player> = Vec::new();
+    let mut players: Vec<Player> = Vec::new();
     for _i in 0..PLAYERS{
         match listener.accept(){
             Ok((q,u))=>{
@@ -65,36 +67,40 @@ pub fn host(){
     //println!("{:?}",adr);
     for (i,s) in sss.iter().enumerate(){ // initial data dump
         connect(s,seed,i as u8);
-        players.push(entities::Player::new());
+        players.push(Player::new());
     }
-    drop(sss);
-    let pdata = Arc::new(Mutex::new(players));
+    let gdata = Arc::new(Mutex::new(GameData {
+        players: players,
+        grid: Some(Grid::random_grid(400, 400, seed).expect("aaaaaa the random grid didnt get generated???")),
+        pid: 0,
+        buf: [0; 4096],
+        bufpos: 1,
+        ingame: true,
+    }));
     let udps = UdpSocket::bind(a).expect("COULD NOT BIND UDP PORT!!!!!!");
-    let mut posbuf: [u8; 4096] = [0; 4096];
-    {
-        let pdata = Arc::clone(&pdata);
-        let udps = udps.try_clone().expect("coppuldnt get socket clone");
-        thread::spawn(move || {server_recieve(pdata,udps)});
-    }
-    #[allow(unused_labels)]
+/*    {
+        let gdata = Arc::clone(&gdata);
+        thread::spawn(move || {tcp_ping(gdata)});
+    }*/
+    udps.set_read_timeout(Some(Duration::new(20,0))).expect("Cannot go into timeout, no dessert for you young man");
+    let mut buf: [u8; 4096] = [0; 4096];
     'running: loop {
-        for i in 0..PLAYERS{
-            let b = i as usize;
-            {
-                let pl = pdata.lock().unwrap();
-                entities::getposbuf(i,&pl[b],&mut posbuf);
-            }
-            for j in 0..PLAYERS {
-                if i!=j {
-                    //println!("trying to send to {}, pid {}", adr[j as usize], i);
-                    match udps.send_to(&posbuf,adr[j as usize]){
-                        Err(e)=>{eprintln!("{}",e);},
-                        _=>{},
-                    };
-                }
+        match udps.recv_from(&mut buf){
+            Ok(_)=>{},
+            Err(_)=>{break 'running;},
+        };
+        packet_decode(&buf, Arc::clone(&gdata));
+        for i in 0..PLAYERS {
+            if i!=buf[0] {
+                //println!("trying to send to {}, pid {}", adr[j as usize], i);
+                match udps.send_to(&buf,adr[i as usize]){
+                    Err(e)=>{eprintln!("{}",e);},
+                    _=>{},
+                };
             }
         }
     }
+    println!("server recieved literally zero data");
 }
 
 
@@ -104,17 +110,7 @@ fn connect(mut s: &TcpStream, seed: u128, pid: u8){
     vectoappend.extend_from_slice(&seed.to_le_bytes());
     s.write(vectoappend.as_slice()).expect("Cannot write to clients, I need to go back to pre-k");
 }
-
-fn server_recieve(pdata: Arc<Mutex<Vec<entities::Player>>>, udps: UdpSocket){
-    udps.set_read_timeout(Some(Duration::new(20,0))).expect("Cannot go into timeout, no dessert for you young man");
-    let mut posbuf: [u8; 4096] = [0; 4096];
-    'running: loop {
-        match udps.recv_from(&mut posbuf){
-            Ok(_)=>{},
-            Err(_)=>{break 'running;},
-        };
-        let mut players = pdata.lock().unwrap();
-        entities::setposbuf(&posbuf, &mut *players);
-    }
-    println!("server recieved literally zero data");
-}
+/*fn tcp_ping(gdata: Arc<Mutex<GameData>>){
+    //todo: should periodically update clients through tcp to prevent desync
+    return
+}*/

@@ -1,4 +1,3 @@
-use std::convert::TryInto;
 #[allow(unused_imports)]
 use crate::gameloop::skill::*;
 use super::grid::*;
@@ -8,13 +7,16 @@ pub struct Position{pub x: f64, pub y: f64}
 
 pub trait Entity {
     fn dims(&self) -> Position;
+    fn mut_dims(&mut self) -> &mut Position;
     fn mut_health(&mut self) -> &mut f32;
+    fn mut_maxhealth(&mut self) -> &mut f32;
     fn maxhealth(&self) -> f32;
     fn mut_pos(&mut self) -> &mut Position;
     fn pos(&self) -> Position;
     fn mut_vel(&mut self) -> &mut Position;
     fn vel(&self) -> Position;
     fn maxvel(&self) -> f64;
+    fn mut_maxvel(&mut self) -> &mut f64;
     fn rot(&self) -> f64;
     fn mut_rot(&mut self) -> &mut f64;
     fn getrect_h(&self) -> Vec<Position> {
@@ -199,11 +201,18 @@ impl Entity for Player {
     fn dims(&self) -> Position {
         self.dims
     }
+    fn mut_dims(&mut self) -> &mut Position {
+        &mut self.dims
+    }
+
     fn mut_health(&mut self) -> &mut f32 {
         &mut self.health
     }
     fn maxhealth(&self) -> f32 {
         self.maxhealth
+    }
+    fn mut_maxhealth(&mut self) -> &mut f32 {
+        &mut self.maxhealth
     }
     fn mut_pos(&mut self) -> &mut Position {
         &mut self.pos
@@ -220,26 +229,14 @@ impl Entity for Player {
     fn maxvel(&self) -> f64 {
         self.maxvelocity
     }
+    fn mut_maxvel(&mut self) -> &mut f64 {
+        &mut self.maxvelocity
+    }
     fn rot(&self) -> f64 {
         self.rot
     }
     fn mut_rot(&mut self) -> &mut f64 {
         &mut self.rot
-    }
-}
-
-// packet generation functions im putting here because i was getting weird module chaining errors otherwise idk
-pub fn setposbuf(posbuf: &[u8], players: &mut Vec<Player>) {
-    let mut p = players[posbuf[0]as usize].mut_pos();
-    p.x = f64::from_le_bytes(posbuf[1..9].try_into().unwrap());
-    p.y = f64::from_le_bytes(posbuf[9..17].try_into().unwrap());
-}
-pub fn getposbuf(pid: u8, pl: &Player, posbuf: &mut [u8]){
-    posbuf[0]=pid;
-    let p = pl.pos();
-    for (i,e) in p.x.to_le_bytes().iter().zip(p.y.to_le_bytes().iter()).enumerate(){
-        posbuf[i+1]=*e.0;
-        posbuf[i+9]=*e.1;
     }
 }
 
