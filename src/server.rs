@@ -17,7 +17,7 @@ pub fn localip()->Result<IpAddr,std::io::Error>{
     let output = if cfg!(target_os="windows"){
         return Err(std::io::Error::new(std::io::ErrorKind::Other,"imagine using windows"))
     }else{
-        Command::new("sh").arg("-c").arg("ip address show | grep -v docker | grep \"inet [0-9]*\\.[0-9]*\\.[0-9]*\\.[0-9]*\" -ao --color=never | tail -1 | tr -d [inet][:space:]").output()?
+        Command::new("sh").arg("-c").arg("ip address show | grep -v docker | grep -v tun | grep \"inet [0-9]*\\.[0-9]*\\.[0-9]*\\.[0-9]*\" -ao --color=never | tail -1 | tr -d [inet][:space:]").output()?
     };
     let outstr = match String::from_utf8(output.stdout){
         Ok(q)=>q,
