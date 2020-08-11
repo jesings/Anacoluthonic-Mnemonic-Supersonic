@@ -11,7 +11,7 @@ use std::sync::{Arc,Mutex};
 use std::ops::DerefMut;
 use std::time::Duration;
 
-use super::grid::Grid;
+use super::grid::{Grid, DTILEDIM};
 use super::entities::{Player, Entity, Position};
 use super::console::*;
 use super::menu::{Button, Slider};
@@ -112,7 +112,9 @@ impl GameState<'_, '_> {
                                 Scenes::GamePlay(c) => {
                                     match &c {
                                         GameplayScene::Skill(_) => {
-                                            ucallbacks.push(Class::use_handle(x, y, now));
+                                            let relx = (x - (dims.0 / 2) as i32) as f64 / DTILEDIM;
+                                            let rely = (y - (dims.1 / 2) as i32) as f64 / DTILEDIM;
+                                            ucallbacks.push(Class::use_handle(relx, rely, now));
                                         },
                                         _ => {},
                                     }
