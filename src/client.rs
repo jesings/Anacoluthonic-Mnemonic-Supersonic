@@ -44,7 +44,7 @@ pub fn connect(gd: Arc<Mutex<GameData>>, addr: &String) {
 pub fn client_thread(a: Arc<Mutex<GameData>>, aaa: SocketAddr, sip: SocketAddr){
     let mut buf: [u8; 4096] = [0; 4096];
     let udps = UdpSocket::bind(aaa).expect("could not bind udp port!!!");
-    udps.set_read_timeout(Some(Duration::new(0,200_000000))).expect("Cannot go into timeout, no dessert for a week young lady");
+    udps.set_read_timeout(Some(Duration::new(0,20_000000))).expect("Cannot go into timeout, no dessert for a week young lady");
     'running: loop{
         //println!("waiting for server to send to {}", aaa);
         match udps.recv_from(&mut buf){
