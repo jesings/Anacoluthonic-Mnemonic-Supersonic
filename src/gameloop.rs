@@ -10,6 +10,7 @@ use sdl2::pixels::Color;
 #[path = "grid.rs"] pub mod grid;
 #[path = "entities.rs"] pub mod entities;
 #[path = "menu.rs"] mod menu;
+#[path = "hud.rs"] mod hud;
 #[path = "server.rs"] pub mod server;
 #[path = "skill.rs"] pub mod skill;
 #[path = "client.rs"] mod client;
@@ -32,7 +33,8 @@ pub fn gameloop(addr:String) {
         .build()
         .unwrap();
 
-    let canvas = window.into_canvas().build().unwrap();
+    let mut canvas = window.into_canvas().build().unwrap();
+    canvas.set_blend_mode(sdl2::render::BlendMode::Blend);
 
     let ttf_context = sdl2::ttf::init().unwrap();
 
@@ -58,8 +60,8 @@ pub fn gameloop(addr:String) {
     let mainmenu = gamestate::MenuItems {
       name: "Main menu".to_string(),
       buttons: vec!(
-        menu::Button {height: 0.06, width: 0.5, cx: 0.5, cy:  0.7, text: "Start Game".to_string(), font: "Inconsolata".to_string(), textcolor: Color::RGB(255, 255, 255), bgcolor: Color::RGB(20, 60, 100), callback: menu::gotogame},
-        menu::Button {height: 0.06, width: 0.5, cx: 0.5, cy:  0.77, text: "Settings".to_string(), font: "Inconsolata".to_string(), textcolor: Color::RGB(255, 255, 255), bgcolor: Color::RGB(20, 60, 100), callback: menu::fdummy}
+        menu::Button {height: 0.06, width: 0.5, cx: 0.5, cy: 0.7, text: "Start Game".to_string(), font: "Inconsolata".to_string(), textcolor: Color::RGB(255, 255, 255), bgcolor: Color::RGB(20, 60, 100), callback: menu::gotogame},
+        menu::Button {height: 0.06, width: 0.5, cx: 0.5, cy: 0.77, text: "Settings".to_string(), font: "Inconsolata".to_string(), textcolor: Color::RGB(255, 255, 255), bgcolor: Color::RGB(20, 60, 100), callback: menu::fdummy}
         ),
       sliders: vec!(),
     };
@@ -80,6 +82,9 @@ pub fn gameloop(addr:String) {
         fonts: font_hash,
         vidsub: video_subsystem,
         scene: gamestate::Scenes::Menu(mainmenu),
+        huditems: vec!(
+            hud::HudItem{dims: 50, cx: 0.04, cy: 0.95, bgcolor: Color::RGBA(200, 60, 100, 200)},
+        ),
         address: addr,
         gamedata: Arc::clone(&gd),
     };

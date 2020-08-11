@@ -14,6 +14,7 @@ use super::grid::Grid;
 use super::entities::{Player, Entity};
 use super::console::*;
 use super::menu::{Button, Slider};
+use super::hud::HudItem;
 use super::packet::*;
 
 static ACCEL: f64 = 1.0 / 64.0;
@@ -45,6 +46,7 @@ pub struct GameState<'ttf, 'a> {
     pub fonts: HashMap<String, Font<'ttf, 'a>>,
     pub vidsub: VideoSubsystem,
     pub scene: Scenes,
+    pub huditems: Vec<HudItem>,
     pub gamedata: Arc<Mutex<GameData>>,
     pub address: String,
 }
