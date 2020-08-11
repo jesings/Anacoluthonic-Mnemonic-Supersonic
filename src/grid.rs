@@ -4,7 +4,9 @@ use std::fs::File;
 use std::convert::TryInto;
 use rand_core::RngCore;
 
-static TILEDIM: i32 = 20;
+pub static TILEDIM: u32 = 20;
+pub static ITILEDIM: i32 = TILEDIM as i32;
+pub static DTILEDIM: f64 = TILEDIM as f64;
 
 macro_rules! maperror {
     ($x: expr, $y: expr, $($z: expr),*) => {
@@ -119,10 +121,10 @@ impl Grid{
 
     pub fn bresen(&self, x_orig: i32, y_orig: i32, x_dest: i32, y_dest: i32, x_subpixel_orig: i32, y_subpixel_orig: i32, x_subpixel_dest: i32, y_subpixel_dest: i32) -> bool{
         //octant 1, 8 case only
-        let x0 = x_orig * TILEDIM + x_subpixel_orig;
-        let y0 = y_orig * TILEDIM + y_subpixel_orig;
-        let x1 = x_dest * TILEDIM + x_subpixel_dest;
-        let y1 = y_dest * TILEDIM + y_subpixel_dest;
+        let x0 = x_orig * ITILEDIM + x_subpixel_orig;
+        let y0 = y_orig * ITILEDIM + y_subpixel_orig;
+        let x1 = x_dest * ITILEDIM + x_subpixel_dest;
+        let y1 = y_dest * ITILEDIM + y_subpixel_dest;
         let x_subpixels = x1 - x0;
         let mut y_subpixels = y1 - y0;
         let yi = if y_subpixels < 0 {y_subpixels = -y_subpixels; -1} else {1};
@@ -134,7 +136,7 @@ impl Grid{
         for x in x0..x1 {
             //skip logic in here
             // if impassible return false
-            match self.grid_coord((x / TILEDIM) as usize, (ynow / TILEDIM) as usize) {
+            match self.grid_coord((x / ITILEDIM) as usize, (ynow / ITILEDIM) as usize) {
                 Some(tile) => {
                     if !tile.passable {
                         return false;

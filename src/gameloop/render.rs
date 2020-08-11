@@ -1,5 +1,5 @@
 use super::gamestate::*;
-use super::grid::Tile;
+use super::grid::{Tile, TILEDIM, ITILEDIM, DTILEDIM};
 use super::entities::*;
 use super::menu::*;
 use sdl2::rect::*;
@@ -7,10 +7,6 @@ use sdl2::rect::*;
 use sdl2::pixels::PixelFormatEnum;
 use sdl2::surface::Surface;
 use sdl2::pixels::Color;
-
-static TILEDIM: u32 = 20;
-static ITILEDIM: i32 = TILEDIM as i32;
-static DTILEDIM: f64 = TILEDIM as f64;
 
 impl GameState<'_, '_> {
     pub fn render(&mut self) -> Result<bool, String> {
