@@ -20,7 +20,7 @@ impl GameState<'_, '_> {
 
 
         match &self.scene {
-            Scenes::GamePlay() => {
+            Scenes::GamePlay(_) => {
                 let gdata = self.gamedata.lock().unwrap();
                 let pp = gdata.players[gdata.pid].pos();
 

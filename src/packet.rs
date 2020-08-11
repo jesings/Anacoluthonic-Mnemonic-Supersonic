@@ -5,10 +5,11 @@ use crate::gameloop::gamestate::GameData;
 use crate::gameloop::entities::*;
 use crate::gameloop::grid::Tile;
 
-pub enum PacketVal { // buff i etc. etc.
+pub enum PacketVal {
     Pos(Position),
     Float64(f64),
     Float32(f32),
+    Usize(usize),
 }
 
 pub fn packet_decode(buf: &[u8], gdata: Arc<Mutex<GameData>>) -> usize {
