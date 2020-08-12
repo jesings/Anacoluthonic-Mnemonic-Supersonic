@@ -84,6 +84,9 @@ impl GameState<'_, '_> {
                 for huditem in &self.huditems {
                     huditem.render(&mut self.canvas, dims.0 as i32, dims.1 as i32);
                 }
+                for hudtext in &self.hudtexts{
+                    hudtext.render(&gdata, &mut self.canvas, &self.fonts, dims.0 as i32, dims.1 as i32);
+                }
                 
             },
             Scenes::Menu(m) => {
