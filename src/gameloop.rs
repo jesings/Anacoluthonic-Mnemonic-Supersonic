@@ -87,6 +87,9 @@ pub fn gameloop(addr:String) {
         huditems: vec!(
             hud::HudItem{height: 120, width: 80, xpadding: 10, ypadding: -10, bgcolor: Color::RGBA(200, 60, 100, 200)},
         ),
+        hudtexts: vec!(
+            hud::HudText{height: 30, width: 60, xpadding: 10, ypadding: -10, textgen: |gd| {format!("{}", gd.pid)}, font: "Inconsolata".to_string()},
+        ),
         address: addr,
         gamedata: Arc::clone(&gd),
     };

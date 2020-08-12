@@ -15,7 +15,7 @@ use super::grid::{Grid, DTILEDIM};
 use super::entities::{Player, Entity, Position};
 use super::console::*;
 use super::menu::{Button, Slider};
-use super::hud::HudItem;
+use super::hud::{HudItem, HudText};
 use super::packet::*;
 use super::class::Class;
 
@@ -58,6 +58,7 @@ pub struct GameState<'ttf, 'a> {
     pub vidsub: VideoSubsystem,
     pub scene: Scenes,
     pub huditems: Vec<HudItem>,
+    pub hudtexts: Vec<HudText>,
     pub class: Option<Class>,
     pub gamedata: Arc<Mutex<GameData>>,
     pub address: String,
