@@ -52,9 +52,12 @@ pub fn gameloop(addr:String) {
         };
         if ext == "otf" || ext == "ttf" {
             let key = name.file_stem().unwrap().to_str().unwrap();
-            let mut value = ttf_context.load_font(name.clone(), 256).unwrap();
-            value.set_kerning(true);
-            font_hash.insert(String::from(key), value);
+            for fontsize in 1..=100 {
+              let mut value = ttf_context.load_font(name.clone(), fontsize).unwrap();
+              value.set_kerning(true);
+              value.set_hinting(sdl2::ttf::Hinting::Mono);
+              font_hash.insert(format!("{}{}", key, fontsize), value);
+            }
             println!("Font added: {}", key);
         }
     }
@@ -62,8 +65,8 @@ pub fn gameloop(addr:String) {
     let mainmenu = gamestate::MenuItems {
       name: "Main menu".to_string(),
       buttons: vec!(
-        menu::Button {height: 0.06, width: 0.5, cx: 0.5, cy: 0.7, text: "Start Game".to_string(), font: "Inconsolata".to_string(), textcolor: Color::RGB(255, 255, 255), bgcolor: Color::RGB(20, 60, 100), callback: menu::gotogame},
-        menu::Button {height: 0.06, width: 0.5, cx: 0.5, cy: 0.77, text: "Settings".to_string(), font: "Inconsolata".to_string(), textcolor: Color::RGB(255, 255, 255), bgcolor: Color::RGB(20, 60, 100), callback: menu::fdummy}
+        menu::Button {height: 0.06, width: 0.5, cx: 0.5, cy: 0.7, text: "Start Game".to_string(), font: "Inconsolata100".to_string(), textcolor: Color::RGB(255, 255, 255), bgcolor: Color::RGB(20, 60, 100), callback: menu::gotogame},
+        menu::Button {height: 0.06, width: 0.5, cx: 0.5, cy: 0.77, text: "Settings".to_string(), font: "Inconsolata100".to_string(), textcolor: Color::RGB(255, 255, 255), bgcolor: Color::RGB(20, 60, 100), callback: menu::fdummy}
         ),
       sliders: vec!(),
     };
@@ -89,11 +92,11 @@ pub fn gameloop(addr:String) {
             hud::HudItem{height: 120, width: 80, xpadding: 10, ypadding: -10, bgcolor: Color::RGBA(200, 60, 100, 200)},
         ),
         hudtexts: vec!(
-            hud::HudText{height: 30, width: 20, xpadding: 10, ypadding: -10, textgen: |gd| {format!("{}", gd.pid)}, font: "Inconsolata".to_string()},
+            hud::HudText{height: 30, width: 20, xpadding: 10, ypadding: -10, textgen: |gd| {format!("{}", gd.pid)}, font: "Inconsolata19".to_string()},
             hud::HudText{height: 30, width: 120, xpadding: 100, ypadding: -10, textgen: |gd| {
               let player = &gd.players[gd.pid];
               format!("HP: {}/{}", player.health() as i32, player.maxhealth() as i32)
-            }, font: "Inconsolata".to_string()},
+            }, font: "Inconsolata19".to_string()},
         ),
         address: addr,
         gamedata: Arc::clone(&gd),
