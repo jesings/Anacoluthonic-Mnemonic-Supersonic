@@ -8,9 +8,10 @@ pub struct Position{pub x: f64, pub y: f64}
 pub trait Entity {
     fn dims(&self) -> Position;
     fn mut_dims(&mut self) -> &mut Position;
+    fn health(&self) -> f32;
     fn mut_health(&mut self) -> &mut f32;
-    fn mut_maxhealth(&mut self) -> &mut f32;
     fn maxhealth(&self) -> f32;
+    fn mut_maxhealth(&mut self) -> &mut f32;
     fn mut_pos(&mut self) -> &mut Position;
     fn pos(&self) -> Position;
     fn mut_vel(&mut self) -> &mut Position;
@@ -206,7 +207,9 @@ impl Entity for Player {
     fn mut_dims(&mut self) -> &mut Position {
         &mut self.dims
     }
-
+    fn health(&self) -> f32 {
+        self.health
+    }
     fn mut_health(&mut self) -> &mut f32 {
         &mut self.health
     }
