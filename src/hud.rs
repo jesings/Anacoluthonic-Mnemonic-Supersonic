@@ -62,17 +62,14 @@ impl HudText {
             },
         };
 
-        let tratio = textsurf.width() as f32 / textsurf.height() as f32;
-        let bratio = self.width as f32 / self.height as f32;
-        let newwidth = if tratio < bratio {(self.height as f32 * tratio) as u32} else {self.width as u32};
-        let newheight = if tratio < bratio {self.height as u32} else {(self.width as f32 / bratio) as u32};
-
-        let cornx2 = cornx + ((self.width - newwidth as i32) / 2) as i32;
-        let corny2 = corny + ((self.height - newheight as i32) / 2) as i32;
 
         let texture_creator = canv.texture_creator();
         let text = texture_creator.create_texture_from_surface(&mut textsurf).unwrap();
-        match canv.copy(&text, None, Rect::new(cornx2, corny2, newwidth, newheight)) {
+        let surfheight = textsurf.height() as i32;
+        let surfwidth = textsurf.width() as i32;
+        let cornx2 = cornx - if self.width < surfwidth {((surfwidth - self.width) / 2)} else {0};
+        let corny2 = corny - if self.height < surfheight {((surfheight - self.height) / 2)} else {0};
+        match canv.copy(&text, None, Rect::new(cornx2, corny2, surfwidth as u32, surfheight as u32)) {
             Ok(_f) => {},
             Err(_e) => {eprintln!("error in rendering button");},
         }
