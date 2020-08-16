@@ -40,8 +40,8 @@ pub struct HudText {
 }
 impl HudText {
     pub fn render(&self, gd: &GameData, canv: &mut WindowCanvas, fonthash: &HashMap<String, Font>, xdim: i32, ydim: i32) -> bool {
-        let cornx = if self.xpadding > 0 {self.xpadding} else {xdim + self.xpadding - self.width};
-        let corny = if self.ypadding > 0 {self.ypadding} else {ydim + self.ypadding - self.height};
+        let xcent = if self.xpadding > 0 {self.xpadding} else {xdim + self.xpadding - self.width} + self.width / 2;
+        let ycent = if self.ypadding > 0 {self.ypadding} else {ydim + self.ypadding - self.height} + self.height / 2;
 
         let text = (self.textgen)(gd);
 
@@ -67,8 +67,8 @@ impl HudText {
         let text = texture_creator.create_texture_from_surface(&mut textsurf).unwrap();
         let surfheight = textsurf.height() as i32;
         let surfwidth = textsurf.width() as i32;
-        let cornx2 = cornx - if self.width < surfwidth {((surfwidth - self.width) / 2)} else {0};
-        let corny2 = corny - if self.height < surfheight {((surfheight - self.height) / 2)} else {0};
+        let cornx2 = xcent - surfwidth / 2;
+        let corny2 = ycent - surfheight / 2;
         match canv.copy(&text, None, Rect::new(cornx2, corny2, surfwidth as u32, surfheight as u32)) {
             Ok(_f) => {},
             Err(_e) => {eprintln!("error in rendering button");},
