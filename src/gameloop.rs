@@ -9,6 +9,7 @@ use sdl2::pixels::Color;
 
 #[path = "grid.rs"] pub mod grid;
 #[path = "entities.rs"] pub mod entities;
+use entities::{Entity};
 #[path = "menu.rs"] mod menu;
 #[path = "hud.rs"] mod hud;
 #[path = "server.rs"] pub mod server;
@@ -88,7 +89,11 @@ pub fn gameloop(addr:String) {
             hud::HudItem{height: 120, width: 80, xpadding: 10, ypadding: -10, bgcolor: Color::RGBA(200, 60, 100, 200)},
         ),
         hudtexts: vec!(
-            hud::HudText{height: 30, width: 60, xpadding: 10, ypadding: -10, textgen: |gd| {format!("{}", gd.pid)}, font: "Inconsolata".to_string()},
+            hud::HudText{height: 30, width: 20, xpadding: 10, ypadding: -10, textgen: |gd| {format!("{}", gd.pid)}, font: "Inconsolata".to_string()},
+            hud::HudText{height: 30, width: 120, xpadding: 100, ypadding: -10, textgen: |gd| {
+              let player = &gd.players[gd.pid];
+              format!("HP: {}/{}", player.health() as i32, player.maxhealth() as i32)
+            }, font: "Inconsolata".to_string()},
         ),
         address: addr,
         gamedata: Arc::clone(&gd),
