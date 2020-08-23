@@ -12,7 +12,7 @@ use std::ops::DerefMut;
 use std::time::Duration;
 
 use super::grid::{Grid, DTILEDIM};
-use super::entities::{Player, Entity, Position};
+use super::entities::{Player, Entity};
 use super::console::*;
 use super::menu::{Button, Slider};
 use super::hud::{HudItem, HudText};
