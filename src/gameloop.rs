@@ -92,11 +92,11 @@ pub fn gameloop(addr:String) {
             hud::HudItem{height: 120, width: 80, xpadding: 10, ypadding: -10, bgcolor: Color::RGBA(200, 60, 100, 200)},
         ),
         hudtexts: vec!(
-            hud::HudText{height: 30, width: 20, xpadding: 10, ypadding: -10, textgen: |gd| {format!("{}", gd.pid)}, font: "Inconsolata19".to_string()},
+            hud::HudText{height: 30, width: 20, xpadding: 10, ypadding: -10, textgen: |gd| {format!("{}", gd.pid)}, color: Color::RGB(0, 255, 0), font: "Inconsolata19".to_string()},
             hud::HudText{height: 30, width: 120, xpadding: 100, ypadding: -10, textgen: |gd| {
               let player = &gd.players[gd.pid];
               format!("HP: {}/{}", player.health() as i32, player.maxhealth() as i32)
-            }, font: "Inconsolata19".to_string()},
+            }, color: Color::RGB(255, 0, 0), font: "Inconsolata19".to_string()},
         ),
         address: addr,
         gamedata: Arc::clone(&gd),
@@ -124,7 +124,7 @@ pub fn gameloop(addr:String) {
 
         let delta = begin.elapsed();
 
-        let idle = Duration::new(0, 1_000_000_000u32 / FRAMERATE - delta.as_millis() as u32);
+        let idle = Duration::new(0, 1_000_000_000 / FRAMERATE - delta.as_millis() as u32);
         now += idle;
         std::thread::sleep(idle);
     }

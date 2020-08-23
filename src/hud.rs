@@ -3,7 +3,6 @@ use sdl2::pixels::Color;
 use sdl2::render::{WindowCanvas};
 use sdl2::ttf::Font;
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
 use crate::gameloop::gamestate::{GameData};
 
 pub struct HudItem {
@@ -36,6 +35,7 @@ pub struct HudText {
     pub xpadding: i32,
     pub ypadding: i32,
     pub font: String,
+    pub color: Color,
     pub textgen: fn(&GameData) -> String,
 }
 impl HudText {
@@ -54,7 +54,7 @@ impl HudText {
         };
 
         let partial = fontguy.render(text.as_str());
-        let mut textsurf = match partial.blended(Color::RGB(255, 0, 0)) {
+        let mut textsurf = match partial.blended(self.color) {
             Ok(g) => g,
             Err(e) => {
                 eprintln!("Error rendering text on button, {}", e);
