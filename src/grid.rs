@@ -119,10 +119,8 @@ impl Grid{
 
     pub fn random_grid(width: usize, height: usize, seed:u128) -> Result<Grid, std::io::Error>{
         let mut ayn: rand_pcg::Pcg64Mcg = rand_pcg::Pcg64Mcg::new(seed);
-        let mut vecmap : Vec<u8> = Vec::with_capacity(width * height);
-        for _i in 0 .. width * height {
-            vecmap.push((ayn.next_u32()&255) as u8);
-        }
+        let mut vecmap = vec![0u8;width * height];
+        ayn.fill_bytes(vecmap.as_mut_slice());
         Grid::new(vecmap, "random", width, height)
     }
 

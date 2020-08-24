@@ -97,6 +97,10 @@ pub fn gameloop(addr:String) {
               let player = &gd.players[gd.pid];
               format!("HP: {}/{}", player.health() as i32, player.maxhealth() as i32)
             }, color: Color::RGB(255, 0, 0), font: "Inconsolata19".to_string()},
+            hud::HudText{height: 30, width: 150, xpadding: -10, ypadding: -10, textgen: |gd| {
+                let pos = gd.players[gd.pid].pos();
+                format!("{:.2},{:.2}", pos.x, pos.y)
+            }, color: Color::RGB(0, 255, 255), font: "Inconsolata19".to_string()},
         ),
         address: addr,
         gamedata: Arc::clone(&gd),
