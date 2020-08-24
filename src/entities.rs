@@ -2,7 +2,7 @@
 use crate::gameloop::skill::*;
 use super::grid::*;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Position{pub x: f64, pub y: f64}
 
 pub trait Entity {
