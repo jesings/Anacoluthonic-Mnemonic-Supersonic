@@ -34,7 +34,7 @@ pub fn connect(gd: Arc<Mutex<GameData>>, addr: &String) {
         for _ in 0..pln {
             gdata.players.push(Player::new());
         }
-        gdata.grid = Some(Grid::random_grid(400, 400, seed).expect("aaaaaa the random grid didnt get generated???"));
+        gdata.grid = Some(Grid::new_from_roomgen(400, 400, seed).expect("aaaaaa the random grid didnt get generated???"));
     }
     thread::spawn(move || {
         client_thread(gd,a,sip);

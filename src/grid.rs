@@ -7,6 +7,11 @@ use rand_core::RngCore;
 pub static TILEDIM: u32 = 20;
 pub static ITILEDIM: i32 = TILEDIM as i32;
 pub static DTILEDIM: f64 = TILEDIM as f64;
+static ROOMFRAC: f32 = 0.25;
+static MAXROOMSIZE: usize = 30;
+static MINROOMSIZE: usize = 12;
+static ROOMRANGE: usize = MAXROOMSIZE - MINROOMSIZE;
+
 
 macro_rules! maperror {
     ($x: expr, $y: expr, $($z: expr),*) => {
@@ -74,6 +79,42 @@ impl Grid{
             },
             Err(e) => {readerror!(e, "Error: Error in reading Mapfile {}!", mapfile);},
         }
+    }
+
+    pub fn new_from_roomgen(width: usize, height: usize, seed:u128) -> Result<Grid, std::io::Error>{
+        let mut genvec = vec![64u8; width * height];
+        let mut paul: rand_pcg::Pcg64Mcg = rand_pcg::Pcg64Mcg::new(seed);
+        #[derive(Debug)]
+        struct Rect(usize, usize, usize, usize);
+        let mut clear_room = |rect: &Rect| {
+            for y in rect.1 .. rect.3 {
+                let rowoffset = y * width;
+                for x in rect.0 .. rect.2 {
+                    genvec[rowoffset + x] = 255u8;
+                }
+            }
+        };
+        let rect_center = |rect: Rect| ((rect.0 + rect.2) / 2, (rect.1 + rect.3) / 2);
+        let intersect_rect = |rect: &Rect, other: &Rect| (rect.0 <= other.2) && (rect.2 >= other.0) && (rect.1 <= other.3) && (rect.3 >= other.1);
+        let mut rooms: Vec<Rect> = vec!();
+        let mut tiles_uncovered = 0;
+        let tiles_thresh = ((width * height) as f32 * ROOMFRAC) as usize;
+        'roomloop: while tiles_uncovered < tiles_thresh {
+            let w = (paul.next_u32() as usize % ROOMRANGE) + MINROOMSIZE;
+            let h = (paul.next_u32() as usize % ROOMRANGE) + MINROOMSIZE;
+            let x = paul.next_u32() as usize % (width - w - 1);
+            let y = paul.next_u32() as usize % (height - h - 1);
+            let roomrect = Rect(x, y, x + w, y + h);
+            for otherroom in &rooms {
+                if intersect_rect(&roomrect, otherroom) {
+                    continue 'roomloop;
+                }
+            }
+            clear_room(&roomrect);
+            rooms.push(roomrect);
+            tiles_uncovered += w * h
+        }
+        Grid::new(genvec, "roomgen", width, height)
     }
 
     pub fn random_grid(width: usize, height: usize, seed:u128) -> Result<Grid, std::io::Error>{
