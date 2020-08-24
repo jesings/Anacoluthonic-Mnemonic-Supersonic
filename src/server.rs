@@ -71,7 +71,7 @@ pub fn host(){
     }
     let gdata = Arc::new(Mutex::new(GameData {
         players: players,
-        grid: Some(Grid::random_grid(400, 400, seed).expect("aaaaaa the random grid didnt get generated???")),
+        grid: Some(Grid::new_from_roomgen(400, 400, seed).expect("aaaaaa the random grid didnt get generated???")),
         pid: 0,
         buf: [0; 4096],
         bufpos: 1,
