@@ -73,6 +73,7 @@ pub fn gameloop(addr:String) {
 
     let gd = Arc::new(Mutex::new(gamestate::GameData {
         players: Vec::new(),
+        tickents: Vec::new(),
         grid: None,
         pid: 0,
         buf: [0; 4096],

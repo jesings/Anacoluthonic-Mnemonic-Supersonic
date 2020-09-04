@@ -1,6 +1,8 @@
 #[allow(unused_imports)]
+use std::time::Duration;
 use crate::gameloop::skill::*;
 use super::grid::*;
+use crate::gameloop::gamestate::GameData;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Position{pub x: f64, pub y: f64}
@@ -201,6 +203,65 @@ impl Player {
 }
 
 impl Entity for Player {
+    fn dims(&self) -> Position {
+        self.dims
+    }
+    fn mut_dims(&mut self) -> &mut Position {
+        &mut self.dims
+    }
+    fn health(&self) -> f32 {
+        self.health
+    }
+    fn mut_health(&mut self) -> &mut f32 {
+        &mut self.health
+    }
+    fn maxhealth(&self) -> f32 {
+        self.maxhealth
+    }
+    fn mut_maxhealth(&mut self) -> &mut f32 {
+        &mut self.maxhealth
+    }
+    fn mut_pos(&mut self) -> &mut Position {
+        &mut self.pos
+    }
+    fn pos(&self) -> Position {
+        self.pos
+    }
+    fn mut_vel(&mut self) -> &mut Position {
+        &mut self.velocity
+    }
+    fn vel(&self) -> Position {
+        self.velocity
+    }
+    fn maxvel(&self) -> f64 {
+        self.maxvelocity
+    }
+    fn mut_maxvel(&mut self) -> &mut f64 {
+        &mut self.maxvelocity
+    }
+    fn rot(&self) -> f64 {
+        self.rot
+    }
+    fn mut_rot(&mut self) -> &mut f64 {
+        &mut self.rot
+    }
+}
+
+
+pub struct TickEnt { // more like thicc kent
+    health: f32,
+    maxhealth: f32,
+    velocity: Position,
+    maxvelocity: f64,
+    pos: Position,
+    dims: Position,
+    rot: f64,
+    state: u8,
+    time: Duration,
+    brain: fn(&mut GameData, usize, Duration) -> bool,
+}
+
+impl Entity for TickEnt {
     fn dims(&self) -> Position {
         self.dims
     }
