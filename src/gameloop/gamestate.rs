@@ -12,7 +12,7 @@ use std::ops::DerefMut;
 use std::time::Duration;
 
 use super::grid::{Grid, DTILEDIM};
-use super::entities::{Player, Entity};
+use super::entities::{Player, Entity, TickEnt};
 use super::console::*;
 use super::menu::{Button, Slider};
 use super::hud::{HudItem, HudText};
@@ -22,7 +22,7 @@ use super::class::Class;
 static ACCEL: f64 = 1.0 / 64.0;
 pub struct GameData {
     pub grid: Option<Grid>,
-    //&entities????
+    pub tickents: Vec<TickEnt>,
     pub players: Vec<Player>,
     pub pid: usize, // pos of clients player in player vecotr
     pub buf: [u8; 4096], // should be periodically updated with changes to gamestate encoded as packets

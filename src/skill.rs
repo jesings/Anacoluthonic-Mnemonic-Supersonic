@@ -9,7 +9,7 @@ pub struct Skill {
     cd: Duration,
     up: Duration,
     targetable: bool,
-    skill: fn(&mut GameData, Position) -> bool,
+    skill: fn(&mut GameData, Position, Duration) -> bool,
     pub skillid: usize, // for like an array of names or textures or something idk?
 }
 
@@ -35,7 +35,7 @@ impl Skill {
     pub fn useskill(&mut self, gdata: &mut GameData, pos: Position, now: Duration) -> bool {
         if self.offcd(now) {
             self.setcd(now);
-            return (self.skill)(gdata, pos)
+            return (self.skill)(gdata, pos, now)
         }
         false
     }
