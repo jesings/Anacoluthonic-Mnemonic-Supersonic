@@ -80,6 +80,14 @@ impl GameState<'_, '_> {
                         self.canvas.copy_ex(&text, None, Rect::new(optopx, optopy, xlen, ylen), pphead.rot(), ppt, false, false).expect("Cannot render because has no spatial awareness like benson");
                     }
                 }
+                
+                for ephead in gdata.tickents.iter() {
+                    let oep = ephead.pos();
+                    let oetopx = ((oep.x-pp.x)*DTILEDIM) as i32 + topx;
+                    let oetopy = ((oep.y-pp.y)*DTILEDIM) as i32 + topy;
+                    //todo add texture shit
+                    self.canvas.copy_ex(&text, None, Rect::new(oetopx, oetopy, xlen, ylen), ephead.rot(), ppt, false, false).expect("Cannot render because has no spatial awareness like bentity");
+                }
 
                 for huditem in &self.huditems {
                     huditem.render(&mut self.canvas, dims.0 as i32, dims.1 as i32);
