@@ -1,5 +1,6 @@
 use std::sync::{Arc,Mutex};
 use std::convert::TryInto;
+use std::time::Duration;
 
 use crate::gameloop::gamestate::GameData;
 use crate::gameloop::entities::*;
@@ -77,6 +78,12 @@ pub fn packet_decode(buf: &[u8], gdata: Arc<Mutex<GameData>>) -> usize {
                 gd.ingame = buf[i+1]!=0;
                 i+=2;
             },
+            4 => {
+                // thicc kent creation
+                let te = TickEnt::new(&mut gd,buftousize(&buf[i+1..i+9]),buftousize(&buf[i+9..i+17]),buftopos(&buf[i+17..i+33]),buftoduration(&buf[i+33..i+45]));
+                gd.tickents.push(te);
+                i+=45;
+            },
             _ => {
                 return i
             },
@@ -142,6 +149,14 @@ pub fn encode_player(buf: &mut [u8], i: usize, pid: u8, feild: u8, val: PacketVa
     }
 }
 
+pub fn encode_tickent(buf: &mut [u8], i: usize, eid: usize, pid: usize, pos: Position, now: Duration) {
+    buf[i] = 4;
+    usizetobuf(eid, &mut buf[i+1..i+9]);
+    usizetobuf(pid, &mut buf[i+9..i+17]);
+    postobuf(pos, &mut buf[i+17..i+33]);
+    durationtobuf(now, &mut buf[i+33..i+45]);
+}
+    
 // le bytes conversion helpers
 fn buftousize(posbuf: &[u8]) -> usize {
     usize::from_le_bytes(posbuf[0..8].try_into().unwrap())
@@ -159,10 +174,26 @@ fn f64tobuf(n: f64, posbuf: &mut [u8]) {
         posbuf[i] = *e;
     }
 }
+fn buftou64(posbuf: &[u8]) -> u64 {
+    u64::from_le_bytes(posbuf[0..8].try_into().unwrap())
+}
+fn u64tobuf(n: u64, posbuf: &mut [u8]) {
+    for (i,e) in n.to_le_bytes().iter().enumerate() {
+        posbuf[i] = *e;
+    }
+}
 fn buftof32(posbuf: &[u8]) -> f32 {
     f32::from_le_bytes(posbuf[0..4].try_into().unwrap())
 }
 fn f32tobuf(n: f32, posbuf: &mut [u8]) {
+    for (i,e) in n.to_le_bytes().iter().enumerate() {
+        posbuf[i] = *e;
+    }
+}
+fn buftou32(posbuf: &[u8]) -> u32 {
+    u32::from_le_bytes(posbuf[0..4].try_into().unwrap())
+}
+fn u32tobuf(n: u32, posbuf: &mut [u8]) {
     for (i,e) in n.to_le_bytes().iter().enumerate() {
         posbuf[i] = *e;
     }
@@ -178,4 +209,11 @@ fn postobuf(pos: Position, posbuf: &mut [u8]) {
         posbuf[i] = *e.0;
         posbuf[i+8] = *e.1;
     }
+}
+fn buftoduration(posbuf: &[u8]) -> Duration {
+    Duration::new(buftou64(&posbuf[0..8]),buftou32(&posbuf[0..4]))
+}
+fn durationtobuf(dur: Duration, posbuf: &mut [u8]) {
+    u64tobuf(dur.as_secs(),&mut posbuf[0..8]);
+    u32tobuf(dur.subsec_nanos(),&mut posbuf[8..12]);
 }

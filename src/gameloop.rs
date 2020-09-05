@@ -117,7 +117,7 @@ pub fn gameloop(addr:String) {
         //    true => {},
         //}
 
-        match gs.update(now) {
+        match gs.update(&mut now) {
             true => {},
             false => break 'running,
         }
@@ -131,6 +131,7 @@ pub fn gameloop(addr:String) {
 
         let idle = Duration::new(0, 1_000_000_000 / FRAMERATE - delta.as_millis() as u32);
         now += idle;
+
         std::thread::sleep(idle);
     }
 }
