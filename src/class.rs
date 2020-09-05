@@ -14,6 +14,7 @@ impl Class {
     pub fn new(id: usize) -> Class {
         let mut sksk: Vec<Skill> = Vec::new();
         sksk.push(Skill::new(0));
+        sksk.push(Skill::new(1));
         Class {
             id: id,
             name: "asd".to_string(),

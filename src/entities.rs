@@ -4,6 +4,8 @@ use crate::gameloop::skill::*;
 use super::grid::*;
 use crate::gameloop::gamestate::GameData;
 
+#[path = "entities/tickentdic.rs"]mod tickentdic;
+
 #[derive(Clone, Copy, Debug)]
 pub struct Position{pub x: f64, pub y: f64}
 
@@ -249,16 +251,24 @@ impl Entity for Player {
 
 
 pub struct TickEnt { // more like thicc kent
-    health: f32,
-    maxhealth: f32,
-    velocity: Position,
-    maxvelocity: f64,
-    pos: Position,
-    dims: Position,
-    rot: f64,
-    state: u8,
-    time: Duration,
-    brain: fn(&mut GameData, usize, Duration) -> bool,
+    pub health: f32,
+    pub maxhealth: f32,
+    pub velocity: Position,
+    pub maxvelocity: f64,
+    pub pos: Position,
+    pub dims: Position,
+    pub rot: f64,
+    // rendering shit (including visibility bool for just like server timed events ig)
+    pub state: usize,
+    pub made: Duration,
+    pub last: Duration,
+    pub brain: fn(&mut GameData, usize, Duration) -> bool,
+}
+
+impl TickEnt {
+    pub fn new(gdata: &mut GameData, eid: usize, pid: usize, pos: Position, now: Duration) -> TickEnt {
+        (tickentdic::THICCKENTS[eid])(gdata, pid, pos, now)
+    }
 }
 
 impl Entity for TickEnt {
