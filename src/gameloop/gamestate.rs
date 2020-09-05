@@ -70,7 +70,7 @@ pub enum Callback {
 }
 
 impl GameState<'_, '_> {
-    pub fn update(&mut self, now: Duration) -> bool {
+    pub fn update(&mut self, now: &mut Duration) -> bool {
         let mut left = false;
         let mut down = false;
         let mut right  = false;
@@ -115,7 +115,7 @@ impl GameState<'_, '_> {
                                         GameplayScene::Skill(_) => {
                                             let relx = (x - (dims.0 / 2) as i32) as f64 / DTILEDIM;
                                             let rely = (y - (dims.1 / 2) as i32) as f64 / DTILEDIM;
-                                            ucallbacks.push(Class::use_handle(relx, rely, now));
+                                            ucallbacks.push(Class::use_handle(relx, rely, *now));
                                         },
                                         _ => {},
                                     }
@@ -167,7 +167,9 @@ impl GameState<'_, '_> {
         }
 
         for callback in bcallbacks { // almost, but not quite, all the same type :(( maybe use an enum? but weird types not sure if worth
-            (callback)(self);
+            if (callback)(self) {
+                *now = Duration::new(0,0);
+            }
         }
         for callback in scallbacks {
             (callback)(self);
@@ -238,7 +240,7 @@ impl GameState<'_, '_> {
                     }
                 }
                 for e in tickents {
-                    if !(e.1)(&mut self.gamedata.lock().unwrap(), e.0, now) {
+                    if !(e.1)(&mut self.gamedata.lock().unwrap(), e.0, *now) {
                         self.gamedata.lock().unwrap().tickents.remove(e.0);
                     }
                 }
