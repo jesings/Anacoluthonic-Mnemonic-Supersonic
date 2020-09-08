@@ -26,6 +26,12 @@ pub static THICCKENTS: [(fn(&mut GameData, usize, Position, Duration) -> TickEnt
                     me.pos.x += me.velocity.x * t;
                     me.pos.y += me.velocity.y * t;
                     me.last = now;
+                    for (i,pp) in gdata.players.iter_mut().enumerate() {
+                        if i != me.state && me.collide(pp) {
+                            pp.damage(6.9);
+                            return false
+                        }
+                    }
                     return true
                 }
                 false
