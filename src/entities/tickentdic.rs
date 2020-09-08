@@ -4,7 +4,7 @@ use std::time::Duration;
 use crate::gameloop::gamestate::GameData;
 use crate::gameloop::entities::*;
 
-pub static THICCKENTS: [(fn(&mut GameData, usize, Position, Duration) -> TickEnt); 1] = [
+pub static THICCKENTS: [fn(&mut GameData, usize, Position, Duration) -> TickEnt; 1] = [
     (|gdata: &mut GameData, pid, pos, now| -> TickEnt {
         let p1 = gdata.players[pid].pos();
         let p2 = Position {x: (pos.x - p1.x) / 5.0, y: (pos.y - p1.y) / 5.0};

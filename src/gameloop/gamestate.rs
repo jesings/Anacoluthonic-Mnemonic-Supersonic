@@ -194,7 +194,7 @@ impl GameState<'_, '_> {
                 c.inp.push_str(&text_accuum);
             },
         }
-
+        let mut alive: bool = true;
         match &mut self.scene {
             Scenes::GamePlay(_) => {
                 let mut tickents = vec![];
@@ -214,7 +214,7 @@ impl GameState<'_, '_> {
                     let leftright: i8 = if left {-1} else {0} + if right {1} else {0};
                     gdata.players[gdata.pid].move_ent(&gdata.grid.as_mut().unwrap(), leftright, updown);
                     gdata.bufpos += encode_player(&mut gdata.buf, gdata.bufpos, gdata.pid as u8, 4, PacketVal::Pos(gdata.players[gdata.pid].pos()));
-                    
+                    gdata.bufpos += encode_player(&mut gdata.buf, gdata.bufpos, gdata.pid as u8, 0, PacketVal::Float32(gdata.players[gdata.pid].health()));
                     //if down {
                     //    let dir = gpv.y.atan2(gpv.x);
                     //    let mut ddxdt: f64 = -dir.cos() * 1.5 * ACCEL;
@@ -238,16 +238,17 @@ impl GameState<'_, '_> {
                     for (i,e) in gdata.tickents.iter().enumerate().rev() {
                         tickents.push((i,e.brain)); // some conditionality also maybe
                     }
+                    alive = gdata.players[gdata.pid].health() > 0.0;
                 }
                 for e in tickents {
                     if !(e.1)(&mut self.gamedata.lock().unwrap(), e.0, *now) {
                         self.gamedata.lock().unwrap().tickents.remove(e.0);
                     }
-                }
+                }   
             },
             Scenes::Menu(_t) => {},
         }
-        true
+        alive
     }
     fn change_gameplayscene(e: GameplayScene) -> impl Fn(&mut GameState) -> bool {
         move |gs: &mut GameState| -> bool {

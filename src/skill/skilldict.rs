@@ -6,7 +6,7 @@ use crate::gameloop::gamestate::GameData;
 use crate::gameloop::packet::*;
 
 pub static SKILLS: [(fn(&mut GameData, Position, Duration) -> bool, u64, u32, bool); 2] = [
-    (|gdata: &mut GameData, pos, now| -> bool { // teleport
+    (|gdata: &mut GameData, pos, _now| -> bool { // teleport
         let _ppos = gdata.players[gdata.pid as usize].change_pos(pos.x, pos.y, &gdata.grid.as_ref().unwrap());
         true
     }, 5, 0, true),

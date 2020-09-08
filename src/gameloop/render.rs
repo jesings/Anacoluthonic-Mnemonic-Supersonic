@@ -72,7 +72,7 @@ impl GameState<'_, '_> {
 
                 //draw other players
                 for (i,pphead) in gdata.players.iter().enumerate(){
-                    if i!=gdata.pid{
+                    if i != gdata.pid && pphead.health() > 0.0 {
                         let opp = pphead.pos();
                         let optopx = ((opp.x-pp.x)*DTILEDIM) as i32 + topx;
                         let optopy = ((opp.y-pp.y)*DTILEDIM) as i32 + topy;

@@ -91,8 +91,9 @@ pub fn host(){
             Err(_)=>{break 'running;},
         };
         packet_decode(&buf, Arc::clone(&gdata));
+        let gdgd = gdata.lock().unwrap();
         for i in 0..PLAYERS {
-            if i!=buf[0] {
+            if i!=buf[0] && gdgd.players[i as usize].health() > 0.0 {
                 //println!("trying to send to {}, pid {}", adr[j as usize], i);
                 match udps.send_to(&buf,adr[i as usize]){
                     Err(e)=>{eprintln!("{}",e);},
