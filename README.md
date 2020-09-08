@@ -17,4 +17,7 @@ sudo apt-get install cargo
 
 Arch Packages
 
-idk ask jonathicc
+```bash
+sudo pacman -S sdl2 sdl2_gfx sdl2_image sdl2_mixer sdl2_ttf
+sudo pacman -S rustup
+```
