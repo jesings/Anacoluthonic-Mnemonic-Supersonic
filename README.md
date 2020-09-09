@@ -21,3 +21,13 @@ Arch Packages
 sudo pacman -S sdl2 sdl2_gfx sdl2_image sdl2_mixer sdl2_ttf
 sudo pacman -S rustup
 ```
+
+Macintosh
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)" #to install homebrew if you haven't
+brew install rustup sdl2 sdl2_mixer sdl2_ttf sdl2_gfx sdl2_image
+echo export LIBRARY_PATH="$LIBRARY_PATH:/usr/local/lib" >> ~/.bash_profile
+export LIBRARY_PATH="$LIBRARY_PATH:/usr/local/lib"
+rustup-init
+```
