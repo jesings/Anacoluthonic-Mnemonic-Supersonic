@@ -6,11 +6,7 @@ run client with cargo run .... with ip adress are arg
 
 Unbuntu Packages
 ```bash
-sudo apt-get install libsdl2-dev
-sudo apt-get install libsdl2-image-dev
-sudo apt-get install libsdl2-ttf-dev
-sudo apt-get install libsdl2-gfx-dev
-sudo apt-get install libsdl2-mixer-dev
+sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-gfx-dev libsdl2-mixer-dev
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs/ | sh
 sudo apt-get install cargo
 ```
