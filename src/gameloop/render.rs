@@ -32,17 +32,15 @@ impl GameState<'_, '_> {
                     let mut ycoord = ysto;
                     for j in 0..=ytiles {
                         let tile: &Tile;
-                        let color: u8;
                         match gdata.grid.as_ref().unwrap().grid_coord((startx + i) as usize, (starty + j) as usize) {
                             None => {
-                                color = 0;
+                                self.canvas.set_draw_color(Color::RGB(0, 0, 0));
                             },
                             Some(t) => {
                                 tile = t;
-                                color = tile.texture;
+                                self.canvas.set_draw_color(if tile.texture == 0 {Color::RGB(80,40,15)} else {Color::RGB(245,235,225)});
                             },
                         }
-                        self.canvas.set_draw_color(Color::RGB(color, color, color));
                         let r = Rect::new(xcoord, ycoord, TILEDIM, TILEDIM);
                         self.canvas.fill_rect(r)?;
                         ycoord += ITILEDIM;

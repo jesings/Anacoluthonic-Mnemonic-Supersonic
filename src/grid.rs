@@ -94,7 +94,7 @@ impl Grid{
                 }
             }
         };
-        let rect_center = |rect: Rect| ((rect.0 + rect.2) / 2, (rect.1 + rect.3) / 2);
+        let _rect_center = |rect: Rect| ((rect.0 + rect.2) / 2, (rect.1 + rect.3) / 2);
         let intersect_rect = |rect: &Rect, other: &Rect| (rect.0 <= other.2) && (rect.2 >= other.0) && (rect.1 <= other.3) && (rect.3 >= other.1);
         let mut rooms: Vec<Rect> = vec!();
         let mut tiles_uncovered = 0;
@@ -118,7 +118,7 @@ impl Grid{
     }
 
     pub fn new_from_automaton(width: usize, height: usize, seed:u128) -> Result<Grid, std::io::Error>{
-        let alivebyte: u8 = 150;
+        let alivebyte = 132u8;
         let deathlimit = 3;
         let birthlimit = 4;
         let mut autovec = vec![0u8; width * height];
@@ -138,15 +138,15 @@ impl Grid{
                 for y in 0..height {
                     let alne = cn(x as i32, y as i32);
                     if v1[y * width + x] > alivebyte {
-                        v2[y * width + x] = if alne <= deathlimit {0u8} else {255u8};
+                        v2[y * width + x] = if alne < deathlimit {0u8} else {255u8};
                     } else {
-                        v2[y * width + x] = if alne >= birthlimit {255u8} else {0u8};
+                        v2[y * width + x] = if alne > birthlimit {255u8} else {0u8};
                     }
                 }
             }
         };
 
-        for _ in 1..4 {
+        for _ in 1..5 {
             autostep(&mut autovec, &mut newauto);
             autostep(&mut newauto, &mut autovec);
         }
