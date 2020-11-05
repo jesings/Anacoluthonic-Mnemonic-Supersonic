@@ -2,6 +2,7 @@ use std::io::{Error, ErrorKind};
 use std::io::prelude::*;
 use std::fs::File;
 use std::convert::TryInto;
+use std::collections::VecDeque;
 use rand_core::RngCore;
 
 pub static TILEDIM: u32 = 20;
@@ -117,21 +118,22 @@ impl Grid{
         Grid::new(genvec, "roomgen", width, height)
     }
 
-    pub fn new_from_automaton(width: usize, height: usize, seed:u128) -> Result<Grid, std::io::Error>{
-        let alivebyte = 132u8;
+    pub fn new_from_automaton(width: usize, height: usize, seed:u128) -> Result<Grid, std::io::Error> {
+        let alivebyte = 167u8;
         let deathlimit = 3;
-        let birthlimit = 4;
+        let birthlimit = 3;
         let mut autovec = vec![0u8; width * height];
         let mut newauto = vec![0u8; width * height];
 
         let mut south_african: rand_pcg::Pcg64Mcg = rand_pcg::Pcg64Mcg::new(seed);
         south_african.fill_bytes(autovec.as_mut_slice());
+        let bnd = |x, y| x < width && y < height;
+        let mvg = |v: &Vec<u8>, x: usize, y: usize| bnd(x, y) && (v[y*width+x] > alivebyte);
 
         let autostep = |v1: &mut Vec<u8>, v2: &mut Vec<u8>| {
             //maybe init this one with size instead
             let cn = |i: i32, j: i32| -> i32 {
-                let bnd = |x, y| -> bool {(x as usize) < width && (y as usize) < height};
-                let mv = |x, y| -> i32 {(bnd(x, y) && (v1[(y as usize)*width+(x as usize)] > alivebyte)) as i32};
+                let mv = |x, y| mvg(v1, x as usize, y as usize) as i32;
                 mv(i-1,j-1) + mv(i-1, j) + mv(i-1, j+1) + mv(i, j-1) + mv(i, j+1) + mv(i+1, j-1) + mv(i+1, j) + mv(i+1, j+1)
             };
             for x in 0..width {
@@ -151,10 +153,43 @@ impl Grid{
             autostep(&mut newauto, &mut autovec);
         }
 
-        Grid::new(newauto, "automaton", width, height)
+        newauto = vec![0u8; width * height];
+
+        for _ in 0..16 {
+            //floodfill
+            let xd = south_african.next_u64() as usize % width;
+            let yd = south_african.next_u64() as usize % height;
+            if autovec[xd + yd * width] < alivebyte {continue;};
+            let mut fillcounter = 0;
+            let mut poormanrecursion: VecDeque<(usize, usize)> = VecDeque::new();
+            poormanrecursion.push_back((xd, yd));
+            let condpush = |x, y, callstack: &mut VecDeque<(usize, usize)>| {
+                if mvg(&autovec, x, y) {callstack.push_back((x, y));}
+            };
+            let mut ff = |x, y, callstack: &mut VecDeque<(usize, usize)>| {
+                if newauto[x + y * width] == 0u8 {
+                    fillcounter += 1;
+                    newauto[x + y * width] = 255u8;
+                    condpush((x as isize - 1) as usize, y, callstack);
+                    condpush(x+1, y, callstack);
+                    condpush(x, (y as isize - 1) as usize, callstack);
+                    condpush(x, y+1, callstack);
+                }
+            };
+            while !poormanrecursion.is_empty() {
+                let (x, y) = poormanrecursion.pop_front().expect("lies");
+                ff(x, y, &mut poormanrecursion);
+            }
+            println!("{} {}", fillcounter, width*height);
+            if fillcounter > (width * height * 2 / 5) {
+                return Grid::new(newauto, "automaton", width, height);
+            }
+            newauto = vec![0u8; width * height];
+        }
+        Grid::new_from_automaton(width, height, seed + 1)
     }
 
-    pub fn random_grid(width: usize, height: usize, seed:u128) -> Result<Grid, std::io::Error>{
+    pub fn random_grid(width: usize, height: usize, seed:u128) -> Result<Grid, std::io::Error> {
         let mut ayn: rand_pcg::Pcg64Mcg = rand_pcg::Pcg64Mcg::new(seed);
         let mut vecmap = vec![0u8;width * height];
         ayn.fill_bytes(vecmap.as_mut_slice());
