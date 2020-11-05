@@ -6,15 +6,24 @@ run client with cargo run .... with ip adress are arg
 
 Unbuntu Packages
 ```bash
-sudo apt-get install libsdl2-dev
-sudo apt-get install libsdl2-image-dev
-sudo apt-get install libsdl2-ttf-dev
-sudo apt-get install libsdl2-gfx-dev
-sudo apt-get install libsdl2-mixer-dev
+sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-gfx-dev libsdl2-mixer-dev
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs/ | sh
 sudo apt-get install cargo
 ```
 
 Arch Packages
 
-idk ask jonathicc
+```bash
+sudo pacman -S sdl2 sdl2_gfx sdl2_image sdl2_mixer sdl2_ttf
+sudo pacman -S rustup
+```
+
+Macintosh
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)" #to install homebrew if you haven't
+brew install rustup sdl2 sdl2_mixer sdl2_ttf sdl2_gfx sdl2_image
+echo export LIBRARY_PATH="$LIBRARY_PATH:/usr/local/lib" >> ~/.bash_profile
+export LIBRARY_PATH="$LIBRARY_PATH:/usr/local/lib"
+rustup-init
+```

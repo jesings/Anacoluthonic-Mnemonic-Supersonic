@@ -12,7 +12,7 @@ use std::ops::DerefMut;
 use std::time::Duration;
 
 use super::grid::{Grid, DTILEDIM};
-use super::entities::{Player, Entity};
+use super::entities::{Player, Entity, TickEnt};
 use super::console::*;
 use super::menu::{Button, Slider};
 use super::hud::{HudItem, HudText};
@@ -22,7 +22,7 @@ use super::class::Class;
 static ACCEL: f64 = 1.0 / 64.0;
 pub struct GameData {
     pub grid: Option<Grid>,
-    //&entities????
+    pub tickents: Vec<TickEnt>,
     pub players: Vec<Player>,
     pub pid: usize, // pos of clients player in player vecotr
     pub buf: [u8; 4096], // should be periodically updated with changes to gamestate encoded as packets
@@ -70,7 +70,7 @@ pub enum Callback {
 }
 
 impl GameState<'_, '_> {
-    pub fn update(&mut self, now: Duration) -> bool {
+    pub fn update(&mut self, now: &mut Duration) -> bool {
         let mut left = false;
         let mut down = false;
         let mut right  = false;
@@ -115,7 +115,7 @@ impl GameState<'_, '_> {
                                         GameplayScene::Skill(_) => {
                                             let relx = (x - (dims.0 / 2) as i32) as f64 / DTILEDIM;
                                             let rely = (y - (dims.1 / 2) as i32) as f64 / DTILEDIM;
-                                            ucallbacks.push(Class::use_handle(relx, rely, now));
+                                            ucallbacks.push(Class::use_handle(relx, rely, *now));
                                         },
                                         _ => {},
                                     }
@@ -149,6 +149,9 @@ impl GameState<'_, '_> {
                                 Scancode::Num1 => {
                                     scallbacks.push(GameState::change_gameplayscene(GameplayScene::Skill(0)));
                                 },
+                                Scancode::Num2 => {
+                                    scallbacks.push(GameState::change_gameplayscene(GameplayScene::Skill(1)));
+                                },
                                 _ => {},
                             }}, _ => {},}
                         },
@@ -164,7 +167,9 @@ impl GameState<'_, '_> {
         }
 
         for callback in bcallbacks { // almost, but not quite, all the same type :(( maybe use an enum? but weird types not sure if worth
-            (callback)(self);
+            if (callback)(self) {
+                *now = Duration::new(0,0);
+            }
         }
         for callback in scallbacks {
             (callback)(self);
@@ -189,49 +194,61 @@ impl GameState<'_, '_> {
                 c.inp.push_str(&text_accuum);
             },
         }
-
+        let mut alive: bool = true;
         match &mut self.scene {
             Scenes::GamePlay(_) => {
-                let mut g = self.gamedata.lock().unwrap();
-                let mut gdata = g.deref_mut();
-                //let gpv = gdata.player.vel();
-                //let rot = gdata.players[gdata.pid].rot();
+                let mut tickents = vec![];
+                {
+                    let mut g = self.gamedata.lock().unwrap();
+                    let mut gdata = g.deref_mut();
+                    //let gpv = gdata.player.vel();
+                    //let rot = gdata.players[gdata.pid].rot();
 
-                //if up {
-                //    let ddxdt: f64 = rot.to_radians().cos() * ACCEL;
-                //    let ddydt: f64 = rot.to_radians().sin() * ACCEL;
+                    //if up {
+                    //    let ddxdt: f64 = rot.to_radians().cos() * ACCEL;
+                    //    let ddydt: f64 = rot.to_radians().sin() * ACCEL;
 
-                //    gdata.player.change_vel(ddxdt, ddydt);
-                //}
-                let updown: i8 = if up {-1} else {0} + if down {1} else {0};
-                let leftright: i8 = if left {-1} else {0} + if right {1} else {0};
-                gdata.players[gdata.pid].move_ent(&gdata.grid.as_mut().unwrap(), leftright, updown);
-                gdata.bufpos += encode_player(&mut gdata.buf, gdata.bufpos, gdata.pid as u8, 4, PacketVal::Pos(gdata.players[gdata.pid].pos()));
-                
-                //if down {
-                //    let dir = gpv.y.atan2(gpv.x);
-                //    let mut ddxdt: f64 = -dir.cos() * 1.5 * ACCEL;
-                //    let mut ddydt: f64 = -dir.sin() * 1.5 * ACCEL;
+                    //    gdata.player.change_vel(ddxdt, ddydt);
+                    //}
+                    let updown: i8 = if up {-1} else {0} + if down {1} else {0};
+                    let leftright: i8 = if left {-1} else {0} + if right {1} else {0};
+                    gdata.players[gdata.pid].move_ent(&gdata.grid.as_mut().unwrap(), leftright, updown);
+                    gdata.bufpos += encode_player(&mut gdata.buf, gdata.bufpos, gdata.pid as u8, 4, PacketVal::Pos(gdata.players[gdata.pid].pos()));
+                    gdata.bufpos += encode_player(&mut gdata.buf, gdata.bufpos, gdata.pid as u8, 0, PacketVal::Float32(gdata.players[gdata.pid].health()));
+                    //if down {
+                    //    let dir = gpv.y.atan2(gpv.x);
+                    //    let mut ddxdt: f64 = -dir.cos() * 1.5 * ACCEL;
+                    //    let mut ddydt: f64 = -dir.sin() * 1.5 * ACCEL;
 
-                //    //if the signs are not equal and back would cause direction change, set velocity to 0 instead
-                //    if gpv.x.signum() != ddxdt.signum() && ddxdt.abs() > gpv.x.abs() {ddxdt = -gpv.x;}
-                //    if gpv.y.signum() != ddydt.signum() && ddydt.abs() > gpv.y.abs() {ddydt = -gpv.y;}
-                //    gdata.player.change_vel(ddxdt, ddydt);
-                //}
+                    //    //if the signs are not equal and back would cause direction change, set velocity to 0 instead
+                    //    if gpv.x.signum() != ddxdt.signum() && ddxdt.abs() > gpv.x.abs() {ddxdt = -gpv.x;}
+                    //    if gpv.y.signum() != ddydt.signum() && ddydt.abs() > gpv.y.abs() {ddydt = -gpv.y;}
+                    //    gdata.player.change_vel(ddxdt, ddydt);
+                    //}
 
-                let mut rv: f64 = 0.0;
-                if cw { rv += 3.0;}
-                if ccw { rv -= 3.0;}
-                gdata.players[gdata.pid].rotate(rv);
-
-                //loop over all entities, for now we just do player
-                //gdata.player.apply_vel(&gdata.grid);
-                //propagate changes to the server as well here
-
+                    let mut rv: f64 = 0.0;
+                    if cw { rv += 3.0;}
+                    if ccw { rv -= 3.0;}
+                    gdata.players[gdata.pid].rotate(rv);
+                    
+                    //loop over all entities, for now we just do player
+                    //gdata.player.apply_vel(&gdata.grid);
+                    //propagate changes to the server as well here
+                    
+                    for (i,e) in gdata.tickents.iter().enumerate().rev() {
+                        tickents.push((i,e.brain)); // some conditionality also maybe
+                    }
+                    alive = gdata.players[gdata.pid].health() > 0.0;
+                }
+                for e in tickents {
+                    if !(e.1)(&mut self.gamedata.lock().unwrap(), e.0, *now) {
+                        self.gamedata.lock().unwrap().tickents.remove(e.0);
+                    }
+                }   
             },
             Scenes::Menu(_t) => {},
         }
-        true
+        alive
     }
     fn change_gameplayscene(e: GameplayScene) -> impl Fn(&mut GameState) -> bool {
         move |gs: &mut GameState| -> bool {

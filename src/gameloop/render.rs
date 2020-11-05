@@ -72,13 +72,21 @@ impl GameState<'_, '_> {
 
                 //draw other players
                 for (i,pphead) in gdata.players.iter().enumerate(){
-                    if i!=gdata.pid{
+                    if i != gdata.pid && pphead.health() > 0.0 {
                         let opp = pphead.pos();
                         let optopx = ((opp.x-pp.x)*DTILEDIM) as i32 + topx;
                         let optopy = ((opp.y-pp.y)*DTILEDIM) as i32 + topy;
                         //todo add texture shit
                         self.canvas.copy_ex(&text, None, Rect::new(optopx, optopy, xlen, ylen), pphead.rot(), ppt, false, false).expect("Cannot render because has no spatial awareness like benson");
                     }
+                }
+                
+                for ephead in gdata.tickents.iter() {
+                    let oep = ephead.pos();
+                    let oetopx = ((oep.x-pp.x)*DTILEDIM) as i32 + topx;
+                    let oetopy = ((oep.y-pp.y)*DTILEDIM) as i32 + topy;
+                    //todo add texture shit
+                    self.canvas.copy_ex(&text, None, Rect::new(oetopx, oetopy, xlen, ylen), ephead.rot(), ppt, false, false).expect("Cannot render because has no spatial awareness like bentity");
                 }
 
                 for huditem in &self.huditems {

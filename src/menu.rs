@@ -47,7 +47,7 @@ pub fn gotogame(gs: &mut GameState) -> bool {
 
 pub fn fdummy(_gs: &mut GameState) -> bool {
   println!("Pushed dummy button");
-  true
+  false
 }
 
 impl MenuRender for Button {
