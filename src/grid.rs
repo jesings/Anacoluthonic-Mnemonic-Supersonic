@@ -117,6 +117,43 @@ impl Grid{
         Grid::new(genvec, "roomgen", width, height)
     }
 
+    pub fn new_from_automaton(width: usize, height: usize, seed:u128) -> Result<Grid, std::io::Error>{
+        let alivebyte: u8 = 150;
+        let deathlimit = 3;
+        let birthlimit = 4;
+        let mut autovec = vec![0u8; width * height];
+        let mut newauto = vec![0u8; width * height];
+
+        let mut south_african: rand_pcg::Pcg64Mcg = rand_pcg::Pcg64Mcg::new(seed);
+        south_african.fill_bytes(autovec.as_mut_slice());
+
+        let autostep = |v1: &mut Vec<u8>, v2: &mut Vec<u8>| {
+            //maybe init this one with size instead
+            let cn = |i: i32, j: i32| -> i32 {
+                let bnd = |x, y| -> bool {(x as usize) < width && (y as usize) < height};
+                let mv = |x, y| -> i32 {(bnd(x, y) && (v1[(y as usize)*width+(x as usize)] > alivebyte)) as i32};
+                mv(i-1,j-1) + mv(i-1, j) + mv(i-1, j+1) + mv(i, j-1) + mv(i, j+1) + mv(i+1, j-1) + mv(i+1, j) + mv(i+1, j+1)
+            };
+            for x in 0..width {
+                for y in 0..height {
+                    let alne = cn(x as i32, y as i32);
+                    if v1[y * width + x] > alivebyte {
+                        v2[y * width + x] = if alne <= deathlimit {0u8} else {255u8};
+                    } else {
+                        v2[y * width + x] = if alne >= birthlimit {255u8} else {0u8};
+                    }
+                }
+            }
+        };
+
+        for _ in 1..4 {
+            autostep(&mut autovec, &mut newauto);
+            autostep(&mut newauto, &mut autovec);
+        }
+
+        Grid::new(newauto, "automaton", width, height)
+    }
+
     pub fn random_grid(width: usize, height: usize, seed:u128) -> Result<Grid, std::io::Error>{
         let mut ayn: rand_pcg::Pcg64Mcg = rand_pcg::Pcg64Mcg::new(seed);
         let mut vecmap = vec![0u8;width * height];
